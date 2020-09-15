@@ -1,32 +1,38 @@
 import * as React from 'react';
-import { Stage, Sprite } from 'react-pixi-fiber';
+import { Stage } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
-import { DraggableContainer } from '../draggable-container';
 import * as PIXI from 'pixi.js';
-import { DroppableContainer } from '../droppable-container';
-import spriteTexture from '../../assets/0_dot.png';
+import { Game } from '../types';
+import { getInitialState } from './game-logic';
+import { useState } from 'react';
+import { TeamContainer } from '../team-container/team-container';
 
 interface Props {
   app: PIXI.Application;
 }
 
+const TEAM_SLOT_X_OFFSET = 10;
+const TEAM_SLOT_Y_OFFSET = 150;
+const ENEMY_SLOT_X_OFFSET = 700;
+const ENEMY_SLOT_Y_OFFSET = 150;
+
 const StageComponent: React.FC<Props> = ({ app }) => {
-  // const [state, setState] = useState<State>({});
+  const [state] = useState<Game>(getInitialState());
 
   return (
     <Stage app={app}>
-      <DroppableContainer
-        x={300}
-        y={100}
-        width={100}
-        height={100}
-        onDrop={(transferObject) => {
-          console.log(transferObject);
-        }}
+      <TeamContainer
+        x={TEAM_SLOT_X_OFFSET}
+        y={TEAM_SLOT_Y_OFFSET}
+        team={state.playerTeam}
+        orientation={'right'}
       />
-      <DraggableContainer app={app} transferObject={{}} x={100} y={100}>
-        <Sprite x={0} y={0} texture={PIXI.Texture.from(spriteTexture)} />
-      </DraggableContainer>
+      <TeamContainer
+        x={ENEMY_SLOT_X_OFFSET}
+        y={ENEMY_SLOT_Y_OFFSET}
+        team={state.enemyTeam}
+        orientation={'left'}
+      />
     </Stage>
   );
 };

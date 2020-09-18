@@ -28,9 +28,14 @@ export interface Stats {
 
 export interface Unit {
   id: string;
+  team: 'player' | 'enemy';
   slotId: SlotIds;
   name: string;
   stats: Stats;
+}
+
+export interface UnitMap {
+  [key: string]: Unit;
 }
 
 export interface Team {
@@ -42,11 +47,13 @@ export interface Team {
     slot11: Slot11;
     slot12: Slot12;
   };
-  units: Unit[];
 }
 
 export interface Game {
+  units: UnitMap;
   playerTeam: Team;
   enemyTeam: Team;
-  turnUnitIds: string[];
+  completedTurnUnitIds: string[];
+  currentTurnUnitId: string;
+  upcomingTurnUnitIds: string[];
 }

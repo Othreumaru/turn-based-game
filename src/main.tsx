@@ -1,16 +1,38 @@
 import * as React from 'react';
+import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import { MainStage } from './components/main-stage';
-import { useState } from 'react';
 import * as PIXI from 'pixi.js';
 
+const size = { width: 1920, height: 1080 };
+const ratio = size.width / size.height;
+
 const createApp = (canvas: HTMLCanvasElement) => {
-  return new PIXI.Application({
+  PIXI.settings.MIPMAP_TEXTURES = PIXI.MIPMAP_MODES.ON;
+  const app = new PIXI.Application({
     backgroundColor: 0x10bb99,
-    height: 512 + 128 + 24,
-    width: 1024,
+    height: size.height,
+    width: size.width,
     view: canvas,
   });
+
+  const resize = () => {
+    let h;
+    let w;
+    if (window.innerWidth / window.innerHeight >= ratio) {
+      w = window.innerHeight * ratio;
+      h = window.innerHeight;
+    } else {
+      w = window.innerWidth;
+      h = window.innerWidth / ratio;
+    }
+    app.renderer.view.style.width = w + 'px';
+    app.renderer.view.style.height = h + 'px';
+  };
+  resize();
+  window.onresize = resize;
+
+  return app;
 };
 
 const CanvasComponent = ({ MainComponent }: any) => {
@@ -24,7 +46,11 @@ const CanvasComponent = ({ MainComponent }: any) => {
         }
       }}
     >
-      {app ? <MainComponent app={app} /> : 'Initializing...'}
+      {app ? (
+        <MainComponent app={app} width={size.width} height={size.height} />
+      ) : (
+        'Initializing...'
+      )}
     </canvas>
   );
 };

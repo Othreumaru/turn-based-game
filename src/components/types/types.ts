@@ -39,20 +39,17 @@ export interface UnitMap {
 }
 
 export interface Team {
-  battleSlots: {
-    slot00: Slot00;
-    slot01: Slot01;
-    slot02: Slot02;
-    slot10: Slot10;
-    slot11: Slot11;
-    slot12: Slot12;
-  };
+  slot00: Slot00;
+  slot01: Slot01;
+  slot02: Slot02;
+  slot10: Slot10;
+  slot11: Slot11;
+  slot12: Slot12;
 }
 
 export interface Game {
   units: UnitMap;
-  playerTeam: Team;
-  enemyTeam: Team;
+  slots: Team;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;
   upcomingTurnUnitIds: string[];

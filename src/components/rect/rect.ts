@@ -4,7 +4,10 @@ import * as PIXI from 'pixi.js';
 interface Props {
   x?: number;
   y?: number;
-  fill: number;
+  fillColor?: number;
+  lineColor?: number;
+  lineWidth?: number;
+  alpha?: number;
   width: number;
   height: number;
 }
@@ -13,11 +16,21 @@ const TYPE = 'Rect';
 export const behavior = {
   customDisplayObject: () => new PIXI.Graphics(),
   customApplyProps: (instance: PIXI.Graphics, oldProps: Props, newProps: Props) => {
-    const { fill, x, y, width, height } = newProps;
+    const { fillColor, lineColor, lineWidth = 1, x, y, width, height, alpha } = newProps;
     instance.clear();
-    instance.beginFill(fill);
+    if (lineColor || lineWidth) {
+      instance.lineStyle(lineWidth || 1, lineColor || 0x00ff00);
+    }
+    if (fillColor) {
+      instance.beginFill(fillColor);
+    }
     instance.drawRect(x || 0, y || 0, width, height);
-    instance.endFill();
+    if (fillColor) {
+      instance.endFill();
+    }
+    if (alpha !== undefined) {
+      instance.alpha = alpha;
+    }
   },
 };
 

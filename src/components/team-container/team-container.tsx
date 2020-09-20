@@ -1,15 +1,22 @@
 import * as React from 'react';
 import { Rect } from '../rect';
-import { Team, Unit } from '../types';
-import { UnitComponent } from '../unit-component';
+import { Team, SlotIds } from '../types';
+
+export interface ChildrenCallbackData {
+  slotId: SlotIds;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 interface Props {
   x: number;
   y: number;
-  team: Team;
-  units: Unit[];
+  slots: Team;
   orientation: 'left' | 'right';
   anchor: PIXI.Point;
+  children: (data: ChildrenCallbackData) => any;
 }
 
 const SLOT_SIZE = 150;
@@ -31,10 +38,10 @@ const selectYPosition = (y: number, row: number, anchor: PIXI.Point) => {
   return y + row * (SLOT_SIZE + SLOT_SPACER) - anchor.y * HEIGHT;
 };
 
-export const TeamContainer: React.FC<Props> = ({ x, y, orientation, team, units, anchor }) => {
+export const TeamContainer: React.FC<Props> = ({ children, x, y, orientation, slots, anchor }) => {
   return (
     <>
-      {Object.entries(team.battleSlots).map(([id, { column, row }]) => {
+      {Object.entries(slots).map(([id, { column, row }]) => {
         return (
           <Rect
             key={id}
@@ -42,24 +49,23 @@ export const TeamContainer: React.FC<Props> = ({ x, y, orientation, team, units,
             y={selectYPosition(y, row, anchor)}
             width={SLOT_SIZE}
             height={SLOT_SIZE}
-            fill={0x00ff00}
+            fillColor={0x00ff00}
           />
         );
       })}
-      {units.map((unit) => {
-        const { id, slotId } = unit;
-        const { column, row } = team.battleSlots[slotId];
-        return (
-          <UnitComponent
-            key={id}
-            x={selectXPosition(x, column, orientation, anchor)}
-            y={selectYPosition(y, row, anchor)}
-            width={SLOT_SIZE}
-            height={SLOT_SIZE}
-            unit={unit}
-          />
-        );
-      })}
+      {typeof children === 'function'
+        ? Object.values(slots)
+            .map((slot) => {
+              return children({
+                slotId: slot.id,
+                x: selectXPosition(x, slot.column, orientation, anchor),
+                y: selectYPosition(y, slot.row, anchor),
+                width: SLOT_SIZE,
+                height: SLOT_SIZE,
+              });
+            })
+            .filter((c) => !!c)
+        : null}
     </>
   );
 };

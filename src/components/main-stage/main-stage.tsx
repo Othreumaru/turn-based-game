@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Stage } from 'react-pixi-fiber';
+import { Container, Stage } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
 import { Game } from '../types';
@@ -7,6 +7,7 @@ import { getInitialState } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
+import { Rect } from '../rect';
 
 interface Props {
   app: PIXI.Application;
@@ -21,48 +22,128 @@ const QUEUE_UNIT_OFFSET = 10;
 const TEAM_SLOT_X_OFFSET = 10;
 const PLAYER_TEAM_ANCHOR = new PIXI.Point(0, 0.5);
 const ENEMY_TEAM_ANCHOR = new PIXI.Point(1, 0.5);
+const MOUSE_OVER_LINE_COLOR = 0xff0000;
+
+const getTeamConfig: (
+  viewportWidth: number
+) => {
+  team: 'enemy' | 'player';
+  x: number;
+  orientation: 'left' | 'right';
+  anchor: PIXI.Point;
+}[] = (viewportWidth) => [
+  { team: 'player', x: TEAM_SLOT_X_OFFSET, orientation: 'right', anchor: PLAYER_TEAM_ANCHOR },
+  {
+    team: 'enemy',
+    x: viewportWidth - TEAM_SLOT_X_OFFSET,
+    orientation: 'left',
+    anchor: ENEMY_TEAM_ANCHOR,
+  },
+];
 
 const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: viewportHeight }) => {
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
   const [state] = useState<Game>(getInitialState());
+  const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+
+  const onMouseOver = (unitId: string) => () => {
+    setMouseOverUnitId(unitId);
+  };
+  const onMouseOut = () => {
+    setMouseOverUnitId(undefined);
+  };
 
   return (
     <Stage app={app}>
-      <UnitComponent
+      <Container
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
-        height={QUEUE_UNIT_SIZE}
-        width={QUEUE_UNIT_SIZE}
-        unit={state.units[state.currentTurnUnitId]}
-      />
+        interactive={true}
+        mouseover={onMouseOver(state.currentTurnUnitId)}
+        mouseout={onMouseOut}
+      >
+        <UnitComponent
+          height={QUEUE_UNIT_SIZE}
+          width={QUEUE_UNIT_SIZE}
+          unit={state.units[state.currentTurnUnitId]}
+        />
+        <Rect
+          width={QUEUE_UNIT_SIZE}
+          height={QUEUE_UNIT_SIZE}
+          lineColor={MOUSE_OVER_LINE_COLOR}
+          lineWidth={3}
+          alpha={mouseOverUnitId === state.currentTurnUnitId ? 1 : 0}
+        />
+      </Container>
+
       {state.upcomingTurnUnitIds
         .map((unitId) => state.units[unitId])
         .map((unit, index) => (
-          <UnitComponent
+          <Container
+            key={unit.id}
             x={viewportCenterX + 20 + (index + 1) * (QUEUE_UNIT_SIZE + QUEUE_UNIT_OFFSET)}
             y={CURRENT_UNIT_Y_OFFSET}
-            height={QUEUE_UNIT_SIZE}
-            width={QUEUE_UNIT_SIZE}
-            unit={unit}
-          />
+            interactive={true}
+            mouseover={onMouseOver(unit.id)}
+            mouseout={onMouseOut}
+          >
+            <UnitComponent
+              key={unit.id}
+              height={QUEUE_UNIT_SIZE}
+              width={QUEUE_UNIT_SIZE}
+              unit={unit}
+            />
+            <Rect
+              width={QUEUE_UNIT_SIZE}
+              height={QUEUE_UNIT_SIZE}
+              lineColor={MOUSE_OVER_LINE_COLOR}
+              lineWidth={3}
+              alpha={mouseOverUnitId === unit.id ? 1 : 0}
+            />
+          </Container>
         ))}
-      <TeamContainer
-        x={TEAM_SLOT_X_OFFSET}
-        y={viewportCenterY}
-        units={Object.values(state.units).filter((unit) => unit.team === 'player')}
-        team={state.playerTeam}
-        orientation={'right'}
-        anchor={PLAYER_TEAM_ANCHOR}
-      />
-      <TeamContainer
-        x={viewportWidth - 10}
-        y={viewportCenterY}
-        units={Object.values(state.units).filter((unit) => unit.team === 'enemy')}
-        team={state.enemyTeam}
-        orientation={'left'}
-        anchor={ENEMY_TEAM_ANCHOR}
-      />
+      {getTeamConfig(viewportWidth).map(({ x, orientation, team, anchor }) => {
+        return (
+          <TeamContainer
+            key={team}
+            x={x}
+            y={viewportCenterY}
+            slots={state.slots}
+            orientation={orientation}
+            anchor={anchor}
+          >
+            {({ slotId, x, y, width, height }) => {
+              const unit = Object.values(state.units)
+                .filter((u) => u.team === team)
+                .find((u) => u.slotId === slotId);
+              return (
+                unit && (
+                  <Container
+                    key={slotId}
+                    x={x}
+                    y={y}
+                    width={width}
+                    height={height}
+                    interactive={true}
+                    mouseover={onMouseOver(unit.id)}
+                    mouseout={onMouseOut}
+                  >
+                    <UnitComponent width={width} height={height} unit={unit} />
+                    <Rect
+                      width={width}
+                      height={height}
+                      lineColor={MOUSE_OVER_LINE_COLOR}
+                      lineWidth={3}
+                      alpha={mouseOverUnitId === unit.id ? 1 : 0}
+                    />
+                  </Container>
+                )
+              );
+            }}
+          </TeamContainer>
+        );
+      })}
     </Stage>
   );
 };

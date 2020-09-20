@@ -72,7 +72,7 @@ export const getInitialState = (): Game => {
         hp: { current: 120, max: 120 },
         level: { current: 1, max: 60 },
         xp: { current: 0, max: 1000 },
-        initiative: { current: 80, max: 100 },
+        initiative: { current: 40, max: 100 },
       },
     },
   ];
@@ -84,25 +84,13 @@ export const getInitialState = (): Game => {
       acc[unit.id] = unit;
       return acc;
     }, {} as UnitMap),
-    playerTeam: {
-      battleSlots: {
-        slot00: { id: 'slot00', column: 0, row: 0 },
-        slot01: { id: 'slot01', column: 0, row: 1 },
-        slot02: { id: 'slot02', column: 0, row: 2 },
-        slot10: { id: 'slot10', column: 1, row: 0 },
-        slot11: { id: 'slot11', column: 1, row: 1 },
-        slot12: { id: 'slot12', column: 1, row: 2 },
-      },
-    },
-    enemyTeam: {
-      battleSlots: {
-        slot00: { id: 'slot00', column: 0, row: 0 },
-        slot01: { id: 'slot01', column: 0, row: 1 },
-        slot02: { id: 'slot02', column: 0, row: 2 },
-        slot10: { id: 'slot10', column: 1, row: 0 },
-        slot11: { id: 'slot11', column: 1, row: 1 },
-        slot12: { id: 'slot12', column: 1, row: 2 },
-      },
+    slots: {
+      slot00: { id: 'slot00', column: 0, row: 0 },
+      slot01: { id: 'slot01', column: 0, row: 1 },
+      slot02: { id: 'slot02', column: 0, row: 2 },
+      slot10: { id: 'slot10', column: 1, row: 0 },
+      slot11: { id: 'slot11', column: 1, row: 1 },
+      slot12: { id: 'slot12', column: 1, row: 2 },
     },
     completedTurnUnitIds: [],
     currentTurnUnitId: initiativeSortedUnits[0].id,

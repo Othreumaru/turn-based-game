@@ -3,11 +3,12 @@ import { Container, Stage } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
 import { Game } from '../types';
-import { getInitialState } from './game-logic';
+import { getInitialState, nextTurn } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
 import { Rect } from '../rect';
+import { Button } from '../button/button';
 
 interface Props {
   app: PIXI.Application;
@@ -44,7 +45,7 @@ const getTeamConfig: (
 const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: viewportHeight }) => {
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const [state] = useState<Game>(getInitialState());
+  const [state, setState] = useState<Game>(getInitialState());
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
   const onMouseOver = (unitId: string) => () => {
@@ -144,6 +145,16 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
           </TeamContainer>
         );
       })}
+      <Button
+        x={800}
+        y={900}
+        width={120}
+        height={30}
+        label={'next-turn'}
+        onClick={() => {
+          setState(nextTurn);
+        }}
+      />
     </Stage>
   );
 };

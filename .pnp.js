@@ -44,6 +44,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@hot-loader/react-dom", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:16.13.0"],
             ["@types/classnames", "npm:2.2.10"],
             ["@types/node", "npm:14.6.4"],
+            ["@types/ramda", "npm:0.27.17"],
             ["@types/react", "npm:16.9.49"],
             ["@types/react-dom", "npm:16.9.8"],
             ["@types/react-router", "npm:5.1.8"],
@@ -59,6 +60,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["pnp-webpack-plugin", "npm:1.6.4"],
             ["prettier", "npm:2.1.1"],
             ["prop-types", "npm:15.7.2"],
+            ["ramda", "npm:0.27.1"],
             ["react", "npm:16.13.1"],
             ["react-dom", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:16.13.1"],
             ["react-hot-loader", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:4.12.21"],
@@ -2390,6 +2392,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/ramda", [
+        ["npm:0.27.17", {
+          "packageLocation": "./.yarn/cache/@types-ramda-npm-0.27.17-9675ed0d3d-15c3edafb4.zip/node_modules/@types/ramda/",
+          "packageDependencies": [
+            ["@types/ramda", "npm:0.27.17"],
+            ["ts-toolbelt", "npm:6.15.5"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/react", [
         ["npm:16.9.32", {
           "packageLocation": "./.yarn/cache/@types-react-npm-16.9.32-82b8858e2c-847a63d1d0.zip/node_modules/@types/react/",
@@ -3304,6 +3316,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@hot-loader/react-dom", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:16.13.0"],
             ["@types/classnames", "npm:2.2.10"],
             ["@types/node", "npm:14.6.4"],
+            ["@types/ramda", "npm:0.27.17"],
             ["@types/react", "npm:16.9.49"],
             ["@types/react-dom", "npm:16.9.8"],
             ["@types/react-router", "npm:5.1.8"],
@@ -3319,6 +3332,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["pnp-webpack-plugin", "npm:1.6.4"],
             ["prettier", "npm:2.1.1"],
             ["prop-types", "npm:15.7.2"],
+            ["ramda", "npm:0.27.1"],
             ["react", "npm:16.13.1"],
             ["react-dom", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:16.13.1"],
             ["react-hot-loader", "virtual:421776eab6474739f38d59385256d841d3c541ead01525b68e55bd876559d95358fcb2c965266a65b8538097b92d90e33cf2c21b27251ab98a971ce988cd7c72#npm:4.12.21"],
@@ -8109,6 +8123,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["ramda", [
+        ["npm:0.27.1", {
+          "packageLocation": "./.yarn/cache/ramda-npm-0.27.1-5818f2cb83-9aa4655dff.zip/node_modules/ramda/",
+          "packageDependencies": [
+            ["ramda", "npm:0.27.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["randombytes", [
         ["npm:2.1.0", {
           "packageLocation": "./.yarn/cache/randombytes-npm-2.1.0-e3da76bccf-ede2693af0.zip/node_modules/randombytes/",
@@ -9540,6 +9563,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packagePeers": [
             "@types/typescript",
             "typescript"
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["ts-toolbelt", [
+        ["npm:6.15.5", {
+          "packageLocation": "./.yarn/cache/ts-toolbelt-npm-6.15.5-e42f89942f-d2f585ee34.zip/node_modules/ts-toolbelt/",
+          "packageDependencies": [
+            ["ts-toolbelt", "npm:6.15.5"]
           ],
           "linkType": "HARD",
         }]

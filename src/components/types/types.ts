@@ -32,6 +32,7 @@ export interface Unit {
   slotId: SlotIds;
   name: string;
   stats: Stats;
+  tags: string[];
 }
 
 export interface UnitMap {

@@ -1,10 +1,12 @@
 import { Game, Unit, UnitMap } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
+import { rollChance } from '../utils/utils';
 
 const completedTurnUnitIdsLens = R.lensProp('completedTurnUnitIds');
 const currentTurnUnitIdLens = R.lensProp('currentTurnUnitId');
 const upcomingTurnUnitIdsLens = R.lensProp('upcomingTurnUnitIds');
+const effectsLens = R.lensProp('effects');
 
 const sortUnits = (units: Unit[]): Unit[] => {
   return units.slice().sort((u1, u2) => u2.stats.initiative.current - u1.stats.initiative.current);
@@ -113,6 +115,7 @@ export const getInitialState = (): Game => {
     completedTurnUnitIds: [],
     currentTurnUnitId: initiativeSortedUnits[0].id,
     upcomingTurnUnitIds: initiativeSortedUnits.slice(1).map((u) => u.id),
+    effects: [],
   };
 };
 
@@ -140,12 +143,30 @@ export const nextTurn = (game: Game): Game => {
   )(game);
 };
 
-export const attackUnit = (source: Unit, target: Unit, game: Game): Game => {
+// attackUnit :: string -> string -> Game -> Game
+export const attackUnit = (sourceId: string) => (targetId: string) => (game: Game): Game => {
   return R.pipe(
     nextTurn,
-    R.set(
-      R.lensPath(['game', 'units', target.id, 'stats', 'hp', 'current']),
-      game.units[target.id].stats.hp.current - 10
+    R.over(
+      effectsLens,
+      R.ifElse(
+        rollChance(0.8),
+        R.append({
+          type: 'dmg-effect',
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: targetId,
+              dmg: 10,
+            },
+          ],
+        }),
+        R.append({
+          type: 'miss-effect',
+          sourceUnitId: sourceId,
+          targetUnitIds: [targetId],
+        })
+      )
     )
   )(game);
 };
@@ -153,6 +174,6 @@ export const attackUnit = (source: Unit, target: Unit, game: Game): Game => {
 export const takeDefensivePosition = (source: Unit, game: Game): Game => {
   return R.pipe(
     nextTurn,
-    R.over(R.lensPath(['game', 'units', source.id, 'tags']), (tags) => [...tags, 'defensive'])
+    R.over(R.lensPath(['units', source.id, 'tags']), (tags) => [...tags, 'defensive'])
   )(game);
 };

@@ -48,10 +48,28 @@ export interface Team {
   slot12: Slot12;
 }
 
+interface DmgEffect {
+  type: 'dmg-effect';
+  sourceUnitId: string;
+  targets: {
+    unitId: string;
+    dmgAmount: number;
+  }[];
+}
+
+interface MissEffect {
+  type: 'miss-effect';
+  sourceUnitId: string;
+  targetUnitIds: string[];
+}
+
+export type Effect = DmgEffect | MissEffect;
+
 export interface Game {
   units: UnitMap;
   slots: Team;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;
   upcomingTurnUnitIds: string[];
+  effects: Effect[];
 }

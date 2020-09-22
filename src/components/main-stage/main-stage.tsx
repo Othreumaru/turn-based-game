@@ -3,7 +3,7 @@ import { Container, Stage } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
 import { Game } from '../types';
-import { getInitialState, nextTurn } from './game-logic';
+import { attackUnit, getInitialState, nextTurn } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
@@ -53,6 +53,9 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
   };
   const onMouseOut = () => {
     setMouseOverUnitId(undefined);
+  };
+  const unitClick = (unitId: string) => () => {
+    setState(attackUnit(state.currentTurnUnitId)(unitId));
   };
 
   return (
@@ -129,6 +132,7 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
                     interactive={true}
                     mouseover={onMouseOver(unit.id)}
                     mouseout={onMouseOut}
+                    click={unitClick(unit.id)}
                   >
                     <UnitComponent width={width} height={height} unit={unit} />
                     <Rect

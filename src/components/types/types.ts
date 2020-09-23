@@ -48,7 +48,7 @@ export interface Team {
   slot12: Slot12;
 }
 
-interface DmgEffect {
+export interface DmgEffect {
   type: 'dmg-effect';
   sourceUnitId: string;
   targets: {
@@ -57,17 +57,25 @@ interface DmgEffect {
   }[];
 }
 
-interface MissEffect {
+export interface MissEffect {
   type: 'miss-effect';
   sourceUnitId: string;
   targetUnitIds: string[];
 }
 
-export type Effect = DmgEffect | MissEffect;
+export interface SpawnEffect {
+  type: 'spawn-effect';
+  unit: Unit;
+}
+
+export interface EndTurnEffect {
+  type: 'end-turn-effect';
+}
+
+export type Effect = SpawnEffect | DmgEffect | MissEffect | EndTurnEffect;
 
 export interface Game {
   units: UnitMap;
-  slots: Team;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;
   upcomingTurnUnitIds: string[];

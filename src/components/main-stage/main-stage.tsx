@@ -2,13 +2,14 @@ import * as React from 'react';
 import { Container, Stage } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { Game } from '../types';
-import { attackUnit, getInitialState, nextTurn } from './game-logic';
+import { Effect } from '../types';
+import { attackUnit, getGame, getInitialState, SLOTS } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
 import { Rect } from '../rect';
 import { Button } from '../button/button';
+import * as R from 'ramda';
 
 interface Props {
   app: PIXI.Application;
@@ -45,8 +46,10 @@ const getTeamConfig: (
 const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: viewportHeight }) => {
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const [state, setState] = useState<Game>(getInitialState());
+  const [state, setState] = useState<Effect[]>(getInitialState());
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+
+  const gameState = getGame(state);
 
   const onMouseOver = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
@@ -55,7 +58,7 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
     setMouseOverUnitId(undefined);
   };
   const unitClick = (unitId: string) => () => {
-    setState(attackUnit(state.currentTurnUnitId)(unitId));
+    setState(attackUnit(gameState.currentTurnUnitId)(unitId)(Math.random()));
   };
 
   return (
@@ -64,25 +67,25 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
         interactive={true}
-        mouseover={onMouseOver(state.currentTurnUnitId)}
+        mouseover={onMouseOver(gameState.currentTurnUnitId)}
         mouseout={onMouseOut}
       >
         <UnitComponent
           height={QUEUE_UNIT_SIZE}
           width={QUEUE_UNIT_SIZE}
-          unit={state.units[state.currentTurnUnitId]}
+          unit={gameState.units[gameState.currentTurnUnitId]}
         />
         <Rect
           width={QUEUE_UNIT_SIZE}
           height={QUEUE_UNIT_SIZE}
           lineColor={MOUSE_OVER_LINE_COLOR}
           lineWidth={3}
-          alpha={mouseOverUnitId === state.currentTurnUnitId ? 1 : 0}
+          alpha={mouseOverUnitId === gameState.currentTurnUnitId ? 1 : 0}
         />
       </Container>
 
-      {state.upcomingTurnUnitIds
-        .map((unitId) => state.units[unitId])
+      {gameState.upcomingTurnUnitIds
+        .map((unitId) => gameState.units[unitId])
         .map((unit, index) => (
           <Container
             key={unit.id}
@@ -113,12 +116,12 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
             key={team}
             x={x}
             y={viewportCenterY}
-            slots={state.slots}
+            slots={SLOTS}
             orientation={orientation}
             anchor={anchor}
           >
             {({ slotId, x, y, width, height }) => {
-              const unit = Object.values(state.units)
+              const unit = Object.values(gameState.units)
                 .filter((u) => u.team === team)
                 .find((u) => u.slotId === slotId);
               return (
@@ -156,7 +159,7 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
         height={30}
         label={'next-turn'}
         onClick={() => {
-          setState(nextTurn);
+          setState(R.append({ type: 'end-turn-effect' }));
         }}
       />
     </Stage>

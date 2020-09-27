@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Container, Stage } from 'react-pixi-fiber';
+import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { Effect } from '../types';
+import { DmgEffect, Effect } from '../types';
 import { attackUnit, getGame, getInitialState, SLOTS } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
@@ -10,9 +10,12 @@ import { UnitComponent } from '../unit-component';
 import { Rect } from '../rect';
 import { Button } from '../button/button';
 import * as R from 'ramda';
+import { EffectContainer } from '../effect-container';
+import TweenManager from '../../tween/TweenManager';
 
 interface Props {
   app: PIXI.Application;
+  tweenManager: TweenManager;
   width: number;
   height: number;
 }
@@ -25,6 +28,7 @@ const TEAM_SLOT_X_OFFSET = 10;
 const PLAYER_TEAM_ANCHOR = new PIXI.Point(0, 0.5);
 const ENEMY_TEAM_ANCHOR = new PIXI.Point(1, 0.5);
 const MOUSE_OVER_LINE_COLOR = 0xff0000;
+const MIDDLE_ANCHOR = new PIXI.Point(0.5, 0.5);
 
 const getTeamConfig: (
   viewportWidth: number
@@ -43,7 +47,12 @@ const getTeamConfig: (
   },
 ];
 
-const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: viewportHeight }) => {
+const StageComponent: React.FC<Props> = ({
+  app,
+  tweenManager,
+  width: viewportWidth,
+  height: viewportHeight,
+}) => {
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
   const [state, setState] = useState<Effect[]>(getInitialState());
@@ -145,6 +154,58 @@ const StageComponent: React.FC<Props> = ({ app, width: viewportWidth, height: vi
                       lineWidth={3}
                       alpha={mouseOverUnitId === unit.id ? 1 : 0}
                     />
+                    <EffectContainer
+                      tweenManager={tweenManager}
+                      effects={state}
+                      initialPropValues={{ alpha: 0 }}
+                      triggerOn={(e) =>
+                        e.type === 'miss-effect' && e.targetUnitIds.includes(unit.id)
+                      }
+                      onEnter={[
+                        { prop: 'alpha', toValue: 1, time: 500 },
+                        { prop: 'alpha', toValue: 1, time: 500 },
+                        { prop: 'alpha', toValue: 0, time: 500 },
+                      ]}
+                    >
+                      {() => (
+                        <>
+                          <Rect width={width} height={height} fillColor={0xffffff} alpha={0.4} />
+                          <Container x={width / 2} y={height / 2}>
+                            <Text text={'MISS'} anchor={MIDDLE_ANCHOR} />
+                          </Container>
+                        </>
+                      )}
+                    </EffectContainer>
+                    <EffectContainer
+                      tweenManager={tweenManager}
+                      effects={state}
+                      initialPropValues={{ alpha: 0 }}
+                      triggerOn={(e) =>
+                        e.type === 'dmg-effect' &&
+                        e.targets.find((t) => t.unitId === unit.id) !== undefined
+                      }
+                      onEnter={[
+                        { prop: 'alpha', toValue: 1, time: 200 },
+                        { prop: 'alpha', toValue: 1, time: 700 },
+                        { prop: 'alpha', toValue: 0, time: 200 },
+                      ]}
+                    >
+                      {(effect) => {
+                        const e = (effect as DmgEffect).targets.find((t) => t.unitId === unit.id);
+                        return (
+                          <>
+                            <Rect width={width} height={height} fillColor={0xff0000} alpha={0.4} />
+                            <Container x={width / 2} y={height / 2}>
+                              <Text
+                                text={e ? `${e.dmgAmount}` : '?'}
+                                style={{ fill: 0xffffff }}
+                                anchor={MIDDLE_ANCHOR}
+                              />
+                            </Container>
+                          </>
+                        );
+                      }}
+                    </EffectContainer>
                   </Container>
                 )
               );

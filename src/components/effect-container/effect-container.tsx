@@ -1,26 +1,39 @@
-import * as React from 'react';
 import { Effect } from '../types';
+import TweenManager from '../../tween/TweenManager';
+import React, { useRef } from 'react';
+import { ChainTween } from './types';
+import { EffectComponent } from './effect-component';
 
 interface Props {
+  tweenManager: TweenManager;
   effects: Effect[];
-  triggerOn: string;
-  children: (data: Effect) => any;
+  triggerOn?: (e: Effect) => boolean;
+  initialPropValues?: { [key: string]: number };
+  children: (effect: Effect) => any;
+  onEnter?: ChainTween[];
+  onLeave?: ChainTween[];
 }
 
-/**
- * Example
- * <EffectContainer
-      effects={state.effects}
-      triggerOn={(effect: Effect) =>
-            effect.type === 'miss-effect' && effect.targetUnitIds.includes(state.currentTurnUnitId)
-      }
-      transition={[{ alpha: 0 }, { alpha: 1, duration: 1000 }, { alpha: 0 }]} />
- >
- *
- * @param children
- * @constructor
- */
+export const EffectContainer: React.FC<Props> = (props) => {
+  const { children, effects, triggerOn, tweenManager, initialPropValues, onEnter } = props;
+  const prevEffects = useRef<Effect[]>([]);
+  const eventsToTrigger = useRef<Effect[]>([]);
 
-export const EffectContainer: React.FC<Props> = ({}) => {
-  return <></>;
+  const unprocessedEffects: Effect[] = effects.slice(prevEffects.current.length);
+  const activeEvents = triggerOn && unprocessedEffects.filter(triggerOn);
+  eventsToTrigger.current = activeEvents?.length ? activeEvents : eventsToTrigger.current;
+
+  prevEffects.current = effects;
+  return (
+    <EffectComponent
+      tweenManager={tweenManager}
+      trigger={activeEvents !== undefined && activeEvents.length >= 1}
+      initialPropValues={initialPropValues}
+      onEnter={onEnter}
+    >
+      {typeof children === 'function' && eventsToTrigger.current.length
+        ? children(eventsToTrigger.current[0])
+        : null}
+    </EffectComponent>
+  );
 };

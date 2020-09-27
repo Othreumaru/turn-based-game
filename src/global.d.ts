@@ -3,6 +3,11 @@ declare module '*.png' {
   export = value;
 }
 
+declare module 'pixi-tween' {
+  const value: any;
+  export = value;
+}
+
 interface Dictionary<T> {
   [key: string]: T;
 }

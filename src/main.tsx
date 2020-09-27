@@ -3,6 +3,11 @@ import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import { MainStage } from './components/main-stage';
 import * as PIXI from 'pixi.js';
+window.PIXI = PIXI;
+import TweenManager from './tween/TweenManager';
+import tween from './tween';
+
+const tweenManager: TweenManager = new tween.TweenManager();
 
 const size = { width: 1920, height: 1080 };
 const ratio = size.width / size.height;
@@ -14,6 +19,10 @@ const createApp = (canvas: HTMLCanvasElement) => {
     height: size.height,
     width: size.width,
     view: canvas,
+  });
+
+  app.ticker.add(() => {
+    tweenManager.update();
   });
 
   const resize = () => {
@@ -47,7 +56,12 @@ const CanvasComponent = ({ MainComponent }: any) => {
       }}
     >
       {app ? (
-        <MainComponent app={app} width={size.width} height={size.height} />
+        <MainComponent
+          app={app}
+          tweenManager={tweenManager}
+          width={size.width}
+          height={size.height}
+        />
       ) : (
         'Initializing...'
       )}

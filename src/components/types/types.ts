@@ -21,10 +21,27 @@ export interface Stat {
 
 export interface Stats {
   hp: Stat;
+  hitChance: Stat;
+  critChance: Stat;
+  critMult: Stat;
   xp: Stat;
   level: Stat;
   initiative: Stat;
 }
+
+export interface AttackAction {
+  type: 'attack-action';
+  minDmg: number;
+  maxDmg: number;
+}
+
+export interface HealAction {
+  type: 'heal-action';
+  minHeal: number;
+  maxHeal: number;
+}
+
+export type UnitActions = AttackAction | HealAction;
 
 export interface Unit {
   id: string;
@@ -32,6 +49,7 @@ export interface Unit {
   slotId: SlotIds;
   name: string;
   stats: Stats;
+  action: UnitActions;
   tags: string[];
 }
 
@@ -53,7 +71,18 @@ export interface DmgEffect {
   sourceUnitId: string;
   targets: {
     unitId: string;
+    isCrit: boolean;
     dmgAmount: number;
+  }[];
+}
+
+export interface HealEffect {
+  type: 'heal-effect';
+  sourceUnitId: string;
+  targets: {
+    unitId: string;
+    isCrit: boolean;
+    healAmount: number;
   }[];
 }
 
@@ -72,7 +101,7 @@ export interface EndTurnEffect {
   type: 'end-turn-effect';
 }
 
-export type Effect = SpawnEffect | DmgEffect | MissEffect | EndTurnEffect;
+export type Effect = SpawnEffect | DmgEffect | HealEffect | MissEffect | EndTurnEffect;
 
 export interface Game {
   units: UnitMap;

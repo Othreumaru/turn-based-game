@@ -1,7 +1,7 @@
-import { DmgEffect, Effect, Game, MissEffect, Team, Unit } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { DmgEffect, Effect, Game, HealEffect, MissEffect, Team, Unit } from '../types';
 import * as R from 'ramda';
-import { rollChance } from '../utils/utils';
+import { getRandomInt, rollChance } from '../utils/utils';
+import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 
 const completedTurnUnitIdsLens = R.lensProp('completedTurnUnitIds');
 const currentTurnUnitIdLens = R.lensProp('currentTurnUnitId');
@@ -27,84 +27,12 @@ export const SLOTS: Team = {
 
 export const getInitialState = (): Effect[] => {
   const units: Unit[] = [
-    {
-      id: uuidv4(),
-      name: 'warrior',
-      team: 'player',
-      slotId: 'slot10',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 70, max: 100 },
-      },
-      tags: [],
-    },
-    {
-      id: uuidv4(),
-      name: 'warrior',
-      team: 'player',
-      slotId: 'slot11',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 70, max: 100 },
-      },
-      tags: [],
-    },
-    {
-      id: uuidv4(),
-      name: 'warrior',
-      team: 'player',
-      slotId: 'slot12',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 70, max: 100 },
-      },
-      tags: [],
-    },
-    {
-      id: uuidv4(),
-      name: 'healer',
-      team: 'player',
-      slotId: 'slot01',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 30, max: 100 },
-      },
-      tags: [],
-    },
-    {
-      id: uuidv4(),
-      name: 'orc',
-      team: 'enemy',
-      slotId: 'slot11',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 40, max: 100 },
-      },
-      tags: [],
-    },
-    {
-      id: uuidv4(),
-      name: 'goblin',
-      team: 'enemy',
-      slotId: 'slot01',
-      stats: {
-        hp: { current: 120, max: 120 },
-        level: { current: 1, max: 60 },
-        xp: { current: 0, max: 1000 },
-        initiative: { current: 40, max: 100 },
-      },
-      tags: [],
-    },
+    createWarrior('slot10'),
+    createWarrior('slot11'),
+    createWarrior('slot12'),
+    createHealer('slot01'),
+    createOrc('slot11'),
+    createGoblin('slot01'),
   ];
   /* const initiativeSortedUnits: Unit[] = sortUnits(units);
   return {
@@ -150,9 +78,8 @@ export const getGame = (effects: Effect[]): Game => {
         };
       }
       case 'dmg-effect': {
-        return {
-          ...acc,
-          units: R.map((unit: Unit) => {
+        const newUnits = R.pipe(
+          R.map((unit: Unit) => {
             const unitEffect = effect.targets.find((e) => e.unitId === unit.id);
             if (unitEffect) {
               return R.over(
@@ -162,7 +89,14 @@ export const getGame = (effects: Effect[]): Game => {
               );
             }
             return unit;
-          })(acc.units as any) as any,
+          })
+        )(acc.units as any) as any;
+        return {
+          ...acc,
+          units: newUnits,
+          upcomingTurnUnitIds: acc.upcomingTurnUnitIds.filter(
+            (id) => newUnits[id].stats.hp.current > 0
+          ),
         };
       }
       case 'end-turn-effect': {
@@ -197,29 +131,87 @@ export const nextTurn = (game: Game): Game => {
   )(game);
 };
 
-// attackUnit :: string -> string -> Game -> Game
-export const attackUnit = (sourceId: string) => (targetId: string) => (roll: number) => (
+// attackUnit :: Game -> string -> string -> Effect[] -> Effect[]
+export const attackUnit = (game: Game) => (sourceId: string) => (targetId: string) => (
   effects: Effect[]
 ): Effect[] => {
-  return R.ifElse(
-    rollChance(roll, 0.8),
-    R.append<DmgEffect>({
-      type: 'dmg-effect',
-      sourceUnitId: sourceId,
-      targets: [
-        {
-          unitId: targetId,
-          dmgAmount: 10,
-        },
-      ],
-    }),
-    R.append<MissEffect>({
-      type: 'miss-effect',
-      sourceUnitId: sourceId,
-      targetUnitIds: [targetId],
-    })
-  )(effects);
+  const sourceUnit = game.units[sourceId];
+  const action = sourceUnit.action;
+  if (action.type === 'attack-action') {
+    return R.ifElse(
+      rollChance(sourceUnit.stats.hitChance.current),
+      R.ifElse(
+        rollChance(sourceUnit.stats.critChance.current),
+        R.append<DmgEffect>({
+          type: 'dmg-effect',
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: targetId,
+              isCrit: true,
+              dmgAmount:
+                getRandomInt(action.minDmg, action.maxDmg) * sourceUnit.stats.critMult.current,
+            },
+          ],
+        }),
+        R.append<DmgEffect>({
+          type: 'dmg-effect',
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: targetId,
+              isCrit: false,
+              dmgAmount: getRandomInt(action.minDmg, action.maxDmg),
+            },
+          ],
+        })
+      ),
+      R.append<MissEffect>({
+        type: 'miss-effect',
+        sourceUnitId: sourceId,
+        targetUnitIds: [targetId],
+      })
+    )(effects);
+  } else {
+    return R.ifElse(
+      rollChance(sourceUnit.stats.hitChance.current),
+      R.ifElse(
+        rollChance(sourceUnit.stats.critChance.current),
+        R.append<HealEffect>({
+          type: 'heal-effect',
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: targetId,
+              isCrit: true,
+              healAmount:
+                getRandomInt(action.minHeal, action.maxHeal) * sourceUnit.stats.critMult.current,
+            },
+          ],
+        }),
+        R.append<HealEffect>({
+          type: 'heal-effect',
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: targetId,
+              isCrit: false,
+              healAmount: getRandomInt(action.minHeal, action.maxHeal),
+            },
+          ],
+        })
+      ),
+      R.append<MissEffect>({
+        type: 'miss-effect',
+        sourceUnitId: sourceId,
+        targetUnitIds: [targetId],
+      })
+    )(effects);
+  }
 };
+
+export const unitIsAlive = (unit: Unit) => unit.stats.hp.current > 0;
+export const unitIsDead = (unit: Unit) => !unitIsAlive(unit);
 
 export const takeDefensivePosition = (source: Unit, game: Game): Game => {
   return R.pipe(

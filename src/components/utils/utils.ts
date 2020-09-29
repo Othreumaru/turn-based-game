@@ -3,6 +3,12 @@ export const peek = (obj: any): any => {
   return obj;
 };
 
-export const rollChance = (roll: number, chance: number) => () => {
-  return roll < chance;
+export const rollChance = (chance: number) => () => {
+  return Math.random() < chance;
+};
+
+export const getRandomInt = (minVal: number, maxVal: number) => {
+  const min = Math.ceil(minVal);
+  const max = Math.floor(maxVal);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };

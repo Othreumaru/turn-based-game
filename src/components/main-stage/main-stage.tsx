@@ -3,7 +3,7 @@ import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
 import { DmgEffect, Effect } from '../types';
-import { attackUnit, getGame, getInitialState, SLOTS } from './game-logic';
+import { attackUnit, getGame, getInitialState, SLOTS, unitIsDead } from './game-logic';
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
@@ -67,7 +67,7 @@ const StageComponent: React.FC<Props> = ({
     setMouseOverUnitId(undefined);
   };
   const unitClick = (unitId: string) => () => {
-    setState(attackUnit(gameState.currentTurnUnitId)(unitId)(Math.random()));
+    setState(attackUnit(gameState)(gameState.currentTurnUnitId)(unitId));
   };
 
   return (
@@ -133,8 +133,15 @@ const StageComponent: React.FC<Props> = ({
               const unit = Object.values(gameState.units)
                 .filter((u) => u.team === team)
                 .find((u) => u.slotId === slotId);
-              return (
-                unit && (
+              return unit ? (
+                unitIsDead(unit) ? (
+                  <Container key={slotId} x={x} y={y} width={width} height={height}>
+                    <Rect width={width} height={height} fillColor={0xeeeeee} />
+                    <Container x={width / 2} y={height / 2}>
+                      <Text text={'DEAD'} anchor={MIDDLE_ANCHOR} />
+                    </Container>
+                  </Container>
+                ) : (
                   <Container
                     key={slotId}
                     x={x}
@@ -198,7 +205,7 @@ const StageComponent: React.FC<Props> = ({
                             <Container x={width / 2} y={height / 2}>
                               <Text
                                 text={e ? `${e.dmgAmount}` : '?'}
-                                style={{ fill: 0xffffff }}
+                                style={{ fill: 0xffffff, fontSize: e ? (e.isCrit ? 50 : 24) : 10 }}
                                 anchor={MIDDLE_ANCHOR}
                               />
                             </Container>
@@ -208,7 +215,7 @@ const StageComponent: React.FC<Props> = ({
                     </EffectContainer>
                   </Container>
                 )
-              );
+              ) : null;
             }}
           </TeamContainer>
         );

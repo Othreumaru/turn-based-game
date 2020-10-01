@@ -7,7 +7,7 @@ import { attackUnit, getGame, getInitialState, SLOTS, unitIsDead } from './game-
 import { useState } from 'react';
 import { TeamContainer } from '../team-container/team-container';
 import { UnitComponent } from '../unit-component';
-import { Rect } from '../rect';
+import { Rect, Animation } from '../rect';
 import { Button } from '../button/button';
 import * as R from 'ramda';
 import { EffectContainer } from '../effect-container';
@@ -29,6 +29,20 @@ const PLAYER_TEAM_ANCHOR = new PIXI.Point(0, 0.5);
 const ENEMY_TEAM_ANCHOR = new PIXI.Point(1, 0.5);
 const MOUSE_OVER_LINE_COLOR = 0xff0000;
 const MIDDLE_ANCHOR = new PIXI.Point(0.5, 0.5);
+
+const SELECTED_UNIT_BORDER_ANIMATION: Animation = {
+  duration: 750,
+  loop: true,
+  pingPong: true,
+  keyframes: {
+    from: {
+      lineColor: 0x72bcd4,
+    },
+    to: {
+      lineColor: 0xc1e1ec,
+    },
+  },
+};
 
 const getTeamConfig: (
   viewportWidth: number
@@ -154,6 +168,15 @@ const StageComponent: React.FC<Props> = ({
                     click={unitClick(unit.id)}
                   >
                     <UnitComponent width={width} height={height} unit={unit} />
+                    {gameState.currentTurnUnitId === unit.id && (
+                      <Rect
+                        width={width}
+                        height={height}
+                        lineWidth={6}
+                        tweenManager={tweenManager}
+                        animation={SELECTED_UNIT_BORDER_ANIMATION}
+                      />
+                    )}
                     <Rect
                       width={width}
                       height={height}
@@ -161,6 +184,7 @@ const StageComponent: React.FC<Props> = ({
                       lineWidth={3}
                       alpha={mouseOverUnitId === unit.id ? 1 : 0}
                     />
+
                     <EffectContainer
                       tweenManager={tweenManager}
                       effects={state}

@@ -1,1 +1,1 @@
-export { Rect } from './rect';
+export { Rect, Animation } from './rect';

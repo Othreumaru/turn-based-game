@@ -7,6 +7,7 @@ export default class Tween extends PIXI.utils.EventEmitter {
   private _chainTween: Tween | null = null;
   private _to: any = null;
   private _from: any = null;
+  private _interpolators: any = null;
   private _delayTime = 0;
   private _elapsedTime = 0;
   private _repeat = 0;
@@ -67,7 +68,12 @@ export default class Tween extends PIXI.utils.EventEmitter {
   }
 
   from(data: any) {
-    this.from = data;
+    this._from = data;
+    return this;
+  }
+
+  interpolators(data: any) {
+    this._interpolators = data;
     return this;
   }
 
@@ -223,7 +229,15 @@ export default class Tween extends PIXI.utils.EventEmitter {
   }
 
   _apply(time: number) {
-    _recursiveApplyTween(this._to, this._from, this.target, time, this._elapsedTime, this.easing);
+    _recursiveApplyTween(
+      this._to,
+      this._from,
+      this._interpolators,
+      this.target,
+      time,
+      this._elapsedTime,
+      this.easing
+    );
 
     if (this.path) {
       let time = this.pingPong ? this.time / 2 : this.time;
@@ -246,6 +260,7 @@ export default class Tween extends PIXI.utils.EventEmitter {
 function _recursiveApplyTween(
   to: { [x: string]: any },
   from: { [x: string]: any },
+  interpolators: { [x: string]: any } | undefined,
   target: { [x: string]: any },
   time: number,
   elapsed: number,
@@ -253,13 +268,24 @@ function _recursiveApplyTween(
 ) {
   for (let k in to) {
     if (!_isObject(to[k])) {
-      let b = from[k];
-      let c = to[k] - from[k];
-      let d = time;
-      let t = elapsed / d;
-      target[k] = b + c * easing(t);
+      if (interpolators && interpolators[k]) {
+        target[k] = interpolators[k](from[k], to[k], easing(elapsed / time));
+      } else {
+        let b = from[k];
+        let c = to[k] - from[k];
+        let t = elapsed / time;
+        target[k] = b + c * easing(t);
+      }
     } else {
-      _recursiveApplyTween(to[k], from[k], target[k], time, elapsed, easing);
+      _recursiveApplyTween(
+        to[k],
+        from[k],
+        interpolators ? interpolators[k] : undefined,
+        target[k],
+        time,
+        elapsed,
+        easing
+      );
     }
   }
 }

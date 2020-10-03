@@ -1,0 +1,50 @@
+{
+  "name": "@zalgoforge/the-game",
+  "version": "1.0.2",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack-dev-server --mode development --hot --progress --color --port 8080",
+    "build": "webpack -p --progress --colors",
+    "prettier": "prettier --write \"src/**/*.{ts,tsx,css}\""
+  },
+  "license": "",
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
+    "@hot-loader/react-dom": "^16.13.0",
+    "@types/classnames": "^2.2.10",
+    "@types/react": "^16.9.50",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-router": "^5.1.8",
+    "@types/uuid": "^8.3.0",
+    "@types/webpack": "^4.41.22",
+    "@types/webpack-env": "1.15.3",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "file-loader": "^6.1.0",
+    "html-webpack-plugin": "^4.5.0",
+    "pnp-webpack-plugin": "^1.6.4",
+    "react-hot-loader": "^4.13.0",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@types/ramda": "^0.27.20",
+    "@zalgoforge/the-tween": "workspace:*",
+    "fp-ts": "^2.8.3",
+    "pixi.js": "^5.3.3",
+    "ramda": "^0.27.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-pixi-fiber": "^0.14.1",
+    "uuid": "^8.3.0"
+  }
+}

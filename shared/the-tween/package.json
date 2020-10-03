@@ -1,0 +1,11 @@
+{
+  "name": "@zalgoforge/the-tween",
+  "version": "1.0.0",
+  "private": true,
+  "main": "lib/index.js",
+  "scripts": {},
+  "dependencies": {
+    "pixi.js": "^5.3.3"
+  },
+  "license": ""
+}

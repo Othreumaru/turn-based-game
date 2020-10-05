@@ -8,3 +8,7 @@ build
 dist
 lib
 tsconfig.tsbuildinfo
+
+# yarn v2
+.yarn/unplugged
+.yarn/install-state.gz

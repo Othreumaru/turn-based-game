@@ -1,4 +1,4 @@
-# Boilerplate with React, TypeScript and PIXI.JS
+# Turn based game
 
 It makes games.
 

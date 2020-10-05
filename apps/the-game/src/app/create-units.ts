@@ -1,4 +1,4 @@
-import { SlotIds, Unit } from '../types';
+import { SlotIds, Unit } from '../components/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createWarrior = (slotId: SlotIds): Unit => {

@@ -2,15 +2,15 @@ import * as React from 'react';
 import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { DmgEffect, Effect } from '../types';
+import { DmgEffect, Effect } from '../components/types';
 import { attackUnit, getGame, getInitialState, SLOTS, unitIsDead } from './game-logic';
 import { useState } from 'react';
-import { TeamContainer } from '../team-container/team-container';
-import { UnitComponent } from '../unit-component';
-import { Rect, TweenAnimation } from '../rect';
-import { Button } from '../button/button';
+import { TeamContainer } from '../components/team-container/team-container';
+import { UnitComponent } from '../components/unit-component';
+import { Rect, TweenAnimation } from '../components/rect';
+import { Button } from '../components/button/button';
 import * as R from 'ramda';
-import { EffectContainer } from '../effect-container';
+import { EffectContainer } from '../components/effect-container';
 import { TweenManager } from '@zalgoforge/the-tween';
 
 interface Props {

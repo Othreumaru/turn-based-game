@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
-import { MainStage } from './components/main-stage';
+import { MainStage } from './app';
 import * as PIXI from 'pixi.js';
 window.PIXI = PIXI;
 import { TweenManager } from '@zalgoforge/the-tween';
@@ -75,7 +75,7 @@ const renderApp = (Main: React.FC<any>) => {
 renderApp(MainStage);
 
 if (module.hot) {
-  module.hot.accept('./components/main-stage', () => {
-    renderApp(require('./components/main-stage').Stage);
+  module.hot.accept('./app', () => {
+    renderApp(require('./app').Stage);
   });
 }

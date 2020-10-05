@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "start": "cd apps/the-game && yarn start",
-    "build": "tsc --build"
+    "build:shared": "tsc --build",
+    "build:app": "cd apps/the-game && yarn build",
+    "build": "yarn build:shared && yarn build:app"
   },
   "workspaces": [
     "apps/*",

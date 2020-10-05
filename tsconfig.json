@@ -3,9 +3,6 @@
   "references": [
     {
       "path": "./shared/the-tween"
-    },
-    {
-      "path": "./apps/the-game"
     }
   ]
 }

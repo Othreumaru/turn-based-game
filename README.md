@@ -4,7 +4,7 @@ It makes games.
 
 # Deplyment 
 
-Game accesible here: https://zalgoforge.github.io/bootstrap/
+Game accesible here: https://othreumaru.github.io/turn-based-game/
 
 ## Installation
 

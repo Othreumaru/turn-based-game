@@ -1,6 +1,6 @@
 import { DmgEffect, Effect, Game, HealEffect, MissEffect, Team, Unit } from '../components/types';
 import * as R from 'ramda';
-import { getRandomInt, rollChance } from '../components/utils/utils';
+import { getRandomInt, rollChance } from '../utils';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 
 const completedTurnUnitIdsLens = R.lensProp('completedTurnUnitIds');

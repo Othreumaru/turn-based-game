@@ -3,7 +3,7 @@ export const peek = (obj: any): any => {
   return obj;
 };
 
-export const rollChance = (chance: number) => () => {
+export const rollChance = (chance: number) => {
   return Math.random() < chance;
 };
 

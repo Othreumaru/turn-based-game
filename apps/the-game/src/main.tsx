@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
-import { MainStage } from './app';
+import { MainStage, store } from './app';
 import * as PIXI from 'pixi.js';
 window.PIXI = PIXI;
 import { TweenManager } from '@zalgoforge/the-tween';
+import { Provider } from 'react-redux';
 
 const tweenManager: TweenManager = new TweenManager();
 
@@ -69,7 +70,12 @@ const CanvasComponent = ({ MainComponent }: any) => {
 };
 
 const renderApp = (Main: React.FC<any>) => {
-  ReactDOM.render(<CanvasComponent MainComponent={Main} />, document.getElementById('root'));
+  ReactDOM.render(
+    <Provider store={store}>
+      <CanvasComponent MainComponent={Main} />
+    </Provider>,
+    document.getElementById('root')
+  );
 };
 
 renderApp(MainStage);

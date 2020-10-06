@@ -15,6 +15,7 @@ export const createWarrior = (slotId: SlotIds): Unit => {
       hitChance: { current: 0.8, max: 1 },
       critChance: { current: 0.2, max: 1 },
       critMult: { current: 2, max: 10 },
+      missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
     action: {
       type: 'attack-action',
@@ -39,6 +40,7 @@ export const createHealer = (slotId: SlotIds): Unit => {
       hitChance: { current: 0.8, max: 1 },
       critChance: { current: 0.2, max: 1 },
       critMult: { current: 2, max: 10 },
+      missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
     action: {
       type: 'heal-action',
@@ -63,6 +65,7 @@ export const createOrc = (slotId: SlotIds): Unit => {
       hitChance: { current: 0.8, max: 1 },
       critChance: { current: 0.2, max: 1 },
       critMult: { current: 2, max: 10 },
+      missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
     action: {
       type: 'attack-action',
@@ -87,6 +90,7 @@ export const createGoblin = (slotId: SlotIds): Unit => {
       hitChance: { current: 0.8, max: 1 },
       critChance: { current: 0.4, max: 1 },
       critMult: { current: 2, max: 10 },
+      missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
     action: {
       type: 'attack-action',

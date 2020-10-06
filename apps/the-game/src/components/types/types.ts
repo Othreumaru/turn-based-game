@@ -27,6 +27,7 @@ export interface Stats {
   xp: Stat;
   level: Stat;
   initiative: Stat;
+  missCount: Stat;
 }
 
 export interface AttackAction {
@@ -67,7 +68,6 @@ export interface Team {
 }
 
 export interface DmgEffect {
-  type: 'dmg-effect';
   sourceUnitId: string;
   targets: {
     unitId: string;
@@ -77,7 +77,6 @@ export interface DmgEffect {
 }
 
 export interface HealEffect {
-  type: 'heal-effect';
   sourceUnitId: string;
   targets: {
     unitId: string;
@@ -87,7 +86,6 @@ export interface HealEffect {
 }
 
 export interface MissEffect {
-  type: 'miss-effect';
   sourceUnitId: string;
   targetUnitIds: string[];
 }
@@ -108,5 +106,4 @@ export interface Game {
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;
   upcomingTurnUnitIds: string[];
-  effects: Effect[];
 }

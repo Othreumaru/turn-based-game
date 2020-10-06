@@ -2,16 +2,19 @@ import * as React from 'react';
 import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { DmgEffect, Effect } from '../components/types';
-import { attackUnit, getGame, getInitialState, SLOTS, unitIsDead } from './game-logic';
-import { useState } from 'react';
+import { UnitMap } from '../components/types';
+import { SLOTS, unitIsDead } from './game-logic';
+import { useEffect, useState } from 'react';
 import { TeamContainer } from '../components/team-container/team-container';
 import { UnitComponent } from '../components/unit-component';
 import { Rect, TweenAnimation } from '../components/rect';
 import { Button } from '../components/button/button';
-import * as R from 'ramda';
-import { EffectContainer } from '../components/effect-container';
 import { TweenManager } from '@zalgoforge/the-tween';
+import { useDispatch, useSelector } from 'react-redux';
+import { unitsSlice } from '../features/units';
+import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
+import { RootState } from './root-reducer';
+import { performUnitAction } from './game-actions';
 
 interface Props {
   app: PIXI.Application;
@@ -69,10 +72,28 @@ const StageComponent: React.FC<Props> = ({
 }) => {
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const [state, setState] = useState<Effect[]>(getInitialState());
+  const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const currentTurnUnitId = useSelector<RootState, string>((state) => state.game.currentTurnUnitId);
+  const upcomingTurnUnitIds = useSelector<RootState, string[]>(
+    (state) => state.game.upcomingTurnUnitIds
+  );
+
+  const dispatch = useDispatch();
+
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
-  const gameState = getGame(state);
+  useEffect(() => {
+    dispatch(
+      unitsSlice.actions.spawnUnits([
+        createWarrior('slot10'),
+        createWarrior('slot11'),
+        createWarrior('slot12'),
+        createHealer('slot01'),
+        createOrc('slot11'),
+        createGoblin('slot01'),
+      ])
+    );
+  }, []);
 
   const onMouseOver = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
@@ -81,7 +102,46 @@ const StageComponent: React.FC<Props> = ({
     setMouseOverUnitId(undefined);
   };
   const unitClick = (unitId: string) => () => {
-    setState(attackUnit(gameState)(gameState.currentTurnUnitId)(unitId));
+    const sourceUnit = units[currentTurnUnitId];
+    performUnitAction(
+      sourceUnit,
+      (dmgAmount, isCrit) => {
+        dispatch(
+          unitsSlice.actions.dmgUnit({
+            sourceUnitId: sourceUnit.id,
+            targets: [
+              {
+                unitId,
+                dmgAmount,
+                isCrit,
+              },
+            ],
+          })
+        );
+      },
+      (healAmount, isCrit) => {
+        dispatch(
+          unitsSlice.actions.healUnit({
+            sourceUnitId: sourceUnit.id,
+            targets: [
+              {
+                unitId,
+                healAmount,
+                isCrit,
+              },
+            ],
+          })
+        );
+      },
+      () => {
+        dispatch(
+          unitsSlice.actions.missUnit({
+            sourceUnitId: sourceUnit.id,
+            targetUnitIds: [unitId],
+          })
+        );
+      }
+    );
   };
 
   return (
@@ -90,25 +150,25 @@ const StageComponent: React.FC<Props> = ({
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
         interactive={true}
-        mouseover={onMouseOver(gameState.currentTurnUnitId)}
+        mouseover={onMouseOver(currentTurnUnitId)}
         mouseout={onMouseOut}
       >
         <UnitComponent
           height={QUEUE_UNIT_SIZE}
           width={QUEUE_UNIT_SIZE}
-          unit={gameState.units[gameState.currentTurnUnitId]}
+          unit={units[currentTurnUnitId]}
         />
         <Rect
           width={QUEUE_UNIT_SIZE}
           height={QUEUE_UNIT_SIZE}
           lineColor={MOUSE_OVER_LINE_COLOR}
           lineWidth={3}
-          alpha={mouseOverUnitId === gameState.currentTurnUnitId ? 1 : 0}
+          alpha={mouseOverUnitId === currentTurnUnitId ? 1 : 0}
         />
       </Container>
 
-      {gameState.upcomingTurnUnitIds
-        .map((unitId) => gameState.units[unitId])
+      {upcomingTurnUnitIds
+        .map((unitId) => units[unitId])
         .map((unit, index) => (
           <Container
             key={unit.id}
@@ -144,7 +204,7 @@ const StageComponent: React.FC<Props> = ({
             anchor={anchor}
           >
             {({ slotId, x, y, width, height }) => {
-              const unit = Object.values(gameState.units)
+              const unit = Object.values(units)
                 .filter((u) => u.team === team)
                 .find((u) => u.slotId === slotId);
               return unit ? (
@@ -168,7 +228,7 @@ const StageComponent: React.FC<Props> = ({
                     click={unitClick(unit.id)}
                   >
                     <UnitComponent width={width} height={height} unit={unit} />
-                    {gameState.currentTurnUnitId === unit.id && (
+                    {currentTurnUnitId === unit.id && (
                       <Rect
                         width={width}
                         height={height}
@@ -184,59 +244,6 @@ const StageComponent: React.FC<Props> = ({
                       lineWidth={3}
                       alpha={mouseOverUnitId === unit.id ? 1 : 0}
                     />
-
-                    <EffectContainer
-                      tweenManager={tweenManager}
-                      effects={state}
-                      initialPropValues={{ alpha: 0 }}
-                      triggerOn={(e) =>
-                        e.type === 'miss-effect' && e.targetUnitIds.includes(unit.id)
-                      }
-                      onEnter={[
-                        { prop: 'alpha', toValue: 1, time: 500 },
-                        { prop: 'alpha', toValue: 1, time: 500 },
-                        { prop: 'alpha', toValue: 0, time: 500 },
-                      ]}
-                    >
-                      {() => (
-                        <>
-                          <Rect width={width} height={height} fillColor={0xffffff} alpha={0.4} />
-                          <Container x={width / 2} y={height / 2}>
-                            <Text text={'MISS'} anchor={MIDDLE_ANCHOR} />
-                          </Container>
-                        </>
-                      )}
-                    </EffectContainer>
-                    <EffectContainer
-                      tweenManager={tweenManager}
-                      effects={state}
-                      initialPropValues={{ alpha: 0 }}
-                      triggerOn={(e) =>
-                        e.type === 'dmg-effect' &&
-                        e.targets.find((t) => t.unitId === unit.id) !== undefined
-                      }
-                      onEnter={[
-                        { prop: 'alpha', toValue: 1, time: 200 },
-                        { prop: 'alpha', toValue: 1, time: 700 },
-                        { prop: 'alpha', toValue: 0, time: 200 },
-                      ]}
-                    >
-                      {(effect) => {
-                        const e = (effect as DmgEffect).targets.find((t) => t.unitId === unit.id);
-                        return (
-                          <>
-                            <Rect width={width} height={height} fillColor={0xff0000} alpha={0.4} />
-                            <Container x={width / 2} y={height / 2}>
-                              <Text
-                                text={e ? `${e.dmgAmount}` : '?'}
-                                style={{ fill: 0xffffff, fontSize: e ? (e.isCrit ? 50 : 24) : 10 }}
-                                anchor={MIDDLE_ANCHOR}
-                              />
-                            </Container>
-                          </>
-                        );
-                      }}
-                    </EffectContainer>
                   </Container>
                 )
               ) : null;
@@ -251,7 +258,7 @@ const StageComponent: React.FC<Props> = ({
         height={30}
         label={'next-turn'}
         onClick={() => {
-          setState(R.append({ type: 'end-turn-effect' }));
+          dispatch(unitsSlice.actions.endTurn());
         }}
       />
     </Stage>

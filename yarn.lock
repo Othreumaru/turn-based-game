@@ -1254,7 +1254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.8.4":
+"@babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.4":
   version: 7.11.2
   resolution: "@babel/runtime@npm:7.11.2"
   dependencies:
@@ -1739,6 +1739,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/hoist-non-react-statics@npm:^3.3.0":
+  version: 3.3.1
+  resolution: "@types/hoist-non-react-statics@npm:3.3.1"
+  dependencies:
+    "@types/react": "*"
+    hoist-non-react-statics: ^3.3.0
+  checksum: 16ab4c45d4920fa378c8be76554b10061247fc04d2c8af11bdb7d520b3967e9c06d7ad5efd9b0f1657fbc4d095f62c6e1325f03b9141eb1ef2c8095b96fd42f8
+  languageName: node
+  linkType: hard
+
 "@types/html-minifier-terser@npm:^5.0.0":
   version: 5.1.1
   resolution: "@types/html-minifier-terser@npm:5.1.1"
@@ -1789,6 +1799,18 @@ __metadata:
   dependencies:
     "@types/react": "*"
   checksum: 53a223c0266178bca9161301d18ee6199e8f75f88caed5c4601c5aaedaf4c68f03bd72f6aafa979254beb20759f0b68a542ce04295d704eb67ae179769c50813
+  languageName: node
+  linkType: hard
+
+"@types/react-redux@npm:^7.1.9":
+  version: 7.1.9
+  resolution: "@types/react-redux@npm:7.1.9"
+  dependencies:
+    "@types/hoist-non-react-statics": ^3.3.0
+    "@types/react": "*"
+    hoist-non-react-statics: ^3.3.0
+    redux: ^4.0.0
+  checksum: 061c4ef6af67f05e55d4304429d689a62f98a27e6b7ddebe25bd4d90229b6ae7508cd6d87aecc4c98ac9dccd1c09c8d6bd75ab395d71692f44d0fa0152c2f703
   languageName: node
   linkType: hard
 
@@ -2079,10 +2101,12 @@ __metadata:
     "@babel/preset-react": ^7.10.4
     "@babel/preset-typescript": ^7.10.4
     "@hot-loader/react-dom": ^16.13.0
+    "@reduxjs/toolkit": ^1.4.0
     "@types/classnames": ^2.2.10
     "@types/ramda": ^0.27.20
     "@types/react": ^16.9.50
     "@types/react-dom": ^16.9.8
+    "@types/react-redux": ^7.1.9
     "@types/react-router": ^5.1.8
     "@types/uuid": ^8.3.0
     "@types/webpack": ^4.41.22
@@ -2100,6 +2124,8 @@ __metadata:
     react-dom: ^16.13.1
     react-hot-loader: ^4.13.0
     react-pixi-fiber: ^0.14.1
+    react-redux: ^7.2.1
+    redux-devtools-extension: ^2.13.8
     uuid: ^8.3.0
     webpack: ^4.44.2
     webpack-cli: ^3.3.12
@@ -2574,7 +2600,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bootstrap@workspace:."
   dependencies:
-    "@reduxjs/toolkit": ^1.4.0
     "@types/node": 14.10.0
     prettier: ^2.1.2
     typescript: ^4.0.3
@@ -6576,7 +6601,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2":
+"prop-types@npm:*, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2":
   version: 15.7.2
   resolution: "prop-types@npm:15.7.2"
   dependencies:
@@ -6794,7 +6819,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.7.0, react-is@npm:^16.8.1":
+"react-is@npm:^16.7.0, react-is@npm:^16.8.1, react-is@npm:^16.9.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 11bcf1267a314a522615f626f3ce3727a3a24cdbf61c4d452add3550a7875326669631326cfb1ba3e92b6f72244c32ffecf93ad21c0cad8455d3e169d0e3f060
@@ -6835,6 +6860,27 @@ fsevents@~2.1.2:
   peerDependencies:
     react: ^16.0.0
   checksum: e24d558cc87841b9aade5a10df645b507ddf2d00d8bcd9fb65ce67590e0757fe4a837abe5c6817863124d580391a4b1c0cce162460e99871bca733074c3871a9
+  languageName: node
+  linkType: hard
+
+"react-redux@npm:^7.2.1":
+  version: 7.2.1
+  resolution: "react-redux@npm:7.2.1"
+  dependencies:
+    "@babel/runtime": ^7.5.5
+    hoist-non-react-statics: ^3.3.0
+    loose-envify: ^1.4.0
+    prop-types: ^15.7.2
+    react-is: ^16.9.0
+  peerDependencies:
+    react: ^16.8.3
+    redux: ^2.0.0 || ^3.0.0 || ^4.0.0-0
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: 94ef2d0f38608e4b659b8f7e3998d33a00066b5d3e52129121f92c354564a3e989ee67ba81395e5b681415a75917e549e0f45e1b251db3a20cff7713e7cfd8f7
   languageName: node
   linkType: hard
 
@@ -6895,6 +6941,15 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
+"redux-devtools-extension@npm:^2.13.8":
+  version: 2.13.8
+  resolution: "redux-devtools-extension@npm:2.13.8"
+  peerDependencies:
+    redux: ^3.1.0 || ^4.0.0
+  checksum: 4375a0698238f658ca93e35209e488e2c493e1cbb449c52bbd4a6a0d118547bc38e0a0af594801cb3abe7d460508792f095614b54006bb7373e14515cd110a4f
+  languageName: node
+  linkType: hard
+
 "redux-thunk@npm:^2.3.0":
   version: 2.3.0
   resolution: "redux-thunk@npm:2.3.0"
@@ -6902,7 +6957,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"redux@npm:^4.0.0":
+"redux@npm:*, redux@npm:^4.0.0":
   version: 4.0.5
   resolution: "redux@npm:4.0.5"
   dependencies:

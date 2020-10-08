@@ -56,7 +56,8 @@ export const unitsSlice = createSlice({
       const initiativeSortedUnitIds = R.pipe(
         R.values,
         sortUnits as any,
-        R.map<any, any>(R.prop('id'))
+        R.map<any, any>(R.prop('id')),
+        R.filter((unitId: string) => state.units[unitId].stats.hp.current > 0)
       )(state.units);
 
       return R.pipe(

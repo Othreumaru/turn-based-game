@@ -1,4 +1,5 @@
 import Tween from './Tween';
+import { TweenAnimation } from './types';
 
 export default class TweenManager {
   private _tweensToDelete: Tween[] = [];
@@ -42,8 +43,8 @@ export default class TweenManager {
     return tweens;
   }
 
-  createTween(target: any) {
-    return new Tween(target, this);
+  createTween(tweenAnimation: TweenAnimation) {
+    return new Tween(tweenAnimation, this);
   }
 
   addTween(tween: Tween) {

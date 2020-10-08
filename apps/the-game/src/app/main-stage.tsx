@@ -7,9 +7,9 @@ import { SLOTS, unitIsDead } from './game-logic';
 import { useEffect, useState } from 'react';
 import { TeamContainer } from '../components/team-container/team-container';
 import { UnitComponent } from '../components/unit-component';
-import { Rect, TweenAnimation } from '../components/rect';
+import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
-import { TweenManager } from '@zalgoforge/the-tween';
+import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
 import { unitsSlice } from '../features/units';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
@@ -36,7 +36,7 @@ const MIDDLE_ANCHOR = new PIXI.Point(0.5, 0.5);
 const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
   duration: 750,
   loop: true,
-  pingPong: true,
+  pingPong: false,
   keyframes: {
     from: {
       lineColor: 0x72bcd4,

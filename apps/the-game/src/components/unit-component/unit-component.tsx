@@ -12,17 +12,18 @@ interface Props {
   unit: Unit;
 }
 
-export const UnitComponent: React.FC<Props> = ({ x, y, width, height, unit: { stats, name } }) => {
+const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit: { stats, name } }) => {
+  const hpBar = {
+    x: 0,
+    y: height * 0.8 * (stats.hp.current / stats.hp.max),
+    width: width,
+    height: height * 0.8 * (1 - stats.hp.current / stats.hp.max),
+  };
   return (
     <Container x={x || 0} y={y || 0}>
       <Rect width={width} height={height} fillColor={0x0000ff} />
       <Rect y={height * 0.8} width={width} height={height * 0.2} fillColor={0xffffff} />
-      <Rect
-        y={height * 0.8 * (stats.hp.current / stats.hp.max)}
-        width={width}
-        height={height * 0.8 * (1 - stats.hp.current / stats.hp.max)}
-        fillColor={0xff0000}
-      />
+      <Rect {...hpBar} fillColor={0xff0000} />
 
       <Text text={name} />
       <Text
@@ -35,3 +36,5 @@ export const UnitComponent: React.FC<Props> = ({ x, y, width, height, unit: { st
     </Container>
   );
 };
+
+export const UnitComponent = React.memo(PureUnitComponent);

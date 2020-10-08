@@ -15,9 +15,9 @@ interface Props {
 const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit: { stats, name } }) => {
   const hpBar = {
     x: 0,
-    y: height * 0.8 * (stats.hp.current / stats.hp.max),
+    y: height * 0.8 * (Math.max(stats.hp.current, 0) / stats.hp.max),
     width: width,
-    height: height * 0.8 * (1 - stats.hp.current / stats.hp.max),
+    height: height * 0.8 * (1 - Math.max(stats.hp.current, 0) / stats.hp.max),
   };
   return (
     <Container x={x || 0} y={y || 0}>

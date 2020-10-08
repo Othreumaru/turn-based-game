@@ -208,44 +208,41 @@ const StageComponent: React.FC<Props> = ({
                 .filter((u) => u.team === team)
                 .find((u) => u.slotId === slotId);
               return unit ? (
-                unitIsDead(unit) ? (
-                  <Container key={slotId} x={x} y={y} width={width} height={height}>
+                <Container
+                  key={slotId}
+                  x={x}
+                  y={y}
+                  width={width}
+                  height={height}
+                  interactive={!unitIsDead(unit)}
+                  mouseover={onMouseOver(unit.id)}
+                  mouseout={onMouseOut}
+                  click={unitClick(unit.id)}
+                >
+                  <UnitComponent width={width} height={height} unit={unit} />
+                  {currentTurnUnitId === unit.id && (
+                    <Rect
+                      width={width}
+                      height={height}
+                      lineWidth={6}
+                      tweenManager={tweenManager}
+                      animation={SELECTED_UNIT_BORDER_ANIMATION}
+                    />
+                  )}
+                  <Rect
+                    width={width}
+                    height={height}
+                    lineColor={MOUSE_OVER_LINE_COLOR}
+                    lineWidth={3}
+                    alpha={mouseOverUnitId === unit.id ? 1 : 0}
+                  />
+                  <Container alpha={unitIsDead(unit) ? 1 : 0}>
                     <Rect width={width} height={height} fillColor={0xeeeeee} />
                     <Container x={width / 2} y={height / 2}>
                       <Text text={'DEAD'} anchor={MIDDLE_ANCHOR} />
                     </Container>
                   </Container>
-                ) : (
-                  <Container
-                    key={slotId}
-                    x={x}
-                    y={y}
-                    width={width}
-                    height={height}
-                    interactive={true}
-                    mouseover={onMouseOver(unit.id)}
-                    mouseout={onMouseOut}
-                    click={unitClick(unit.id)}
-                  >
-                    <UnitComponent width={width} height={height} unit={unit} />
-                    {currentTurnUnitId === unit.id && (
-                      <Rect
-                        width={width}
-                        height={height}
-                        lineWidth={6}
-                        tweenManager={tweenManager}
-                        animation={SELECTED_UNIT_BORDER_ANIMATION}
-                      />
-                    )}
-                    <Rect
-                      width={width}
-                      height={height}
-                      lineColor={MOUSE_OVER_LINE_COLOR}
-                      lineWidth={3}
-                      alpha={mouseOverUnitId === unit.id ? 1 : 0}
-                    />
-                  </Container>
-                )
+                </Container>
               ) : null;
             }}
           </TeamContainer>

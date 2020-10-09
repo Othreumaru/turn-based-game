@@ -9,19 +9,30 @@ let initialState: Game = {
   completedTurnUnitIds: [],
 };
 
-const completedTurnUnitIdsLens = R.lensProp('completedTurnUnitIds');
-const currentTurnUnitIdLens = R.lensProp('currentTurnUnitId');
-const upcomingTurnUnitIdsLens = R.lensProp('upcomingTurnUnitIds');
-
-/**
- *    removeDefensiveFromUnit :: string -> Game -> Game
- */
-const removeDefensiveFromUnit = (unitId: string) => {
-  return R.over(R.lensPath(['units', unitId, 'tags']), R.reject(R.equals('defensive')));
-};
-
 const sortUnits = (units: Unit[]): Unit[] => {
   return units.slice().sort((u1, u2) => u2.stats.initiative.current - u1.stats.initiative.current);
+};
+
+const mutableEndTurn = (state: Game) => {
+  if (state.upcomingTurnUnitIds.length) {
+    const [current, ...rest] = state.upcomingTurnUnitIds;
+    state.units[current].tags = state.units[current].tags.filter((t) => t !== 'defensive');
+    state.completedTurnUnitIds.push(state.currentTurnUnitId);
+    state.currentTurnUnitId = current;
+    state.upcomingTurnUnitIds = rest;
+    return;
+  }
+  const initiativeSortedUnitIds: string[] = R.pipe(
+    R.values,
+    sortUnits as any,
+    R.map<any, any>(R.prop('id')),
+    R.filter((unitId: string) => state.units[unitId].stats.hp.current > 0)
+  )(state.units);
+
+  const [current, ...rest] = initiativeSortedUnitIds;
+  state.completedTurnUnitIds = [];
+  state.currentTurnUnitId = current;
+  state.upcomingTurnUnitIds = rest;
 };
 
 export const unitsSlice = createSlice({
@@ -44,28 +55,7 @@ export const unitsSlice = createSlice({
         state.currentTurnUnitId === '' ? unitIds[0] : state.currentTurnUnitId;
     },
     endTurn: (state, _: PayloadAction<void>) => {
-      if (state.upcomingTurnUnitIds.length) {
-        const [current, ...rest] = state.upcomingTurnUnitIds;
-        return R.pipe(
-          removeDefensiveFromUnit(current),
-          R.over(completedTurnUnitIdsLens, R.append(state.currentTurnUnitId)),
-          R.set(currentTurnUnitIdLens, current),
-          R.set(upcomingTurnUnitIdsLens, rest)
-        )(state);
-      }
-      const initiativeSortedUnitIds = R.pipe(
-        R.values,
-        sortUnits as any,
-        R.map<any, any>(R.prop('id')),
-        R.filter((unitId: string) => state.units[unitId].stats.hp.current > 0)
-      )(state.units);
-
-      return R.pipe(
-        removeDefensiveFromUnit(R.head(initiativeSortedUnitIds)),
-        R.set(completedTurnUnitIdsLens, []),
-        R.set(currentTurnUnitIdLens, R.head(initiativeSortedUnitIds)),
-        R.set(upcomingTurnUnitIdsLens, R.drop(1, initiativeSortedUnitIds))
-      )(state);
+      mutableEndTurn(state);
     },
     dmgUnit: (state, action: PayloadAction<DmgEffect>) => {
       action.payload.targets.forEach((target) => {
@@ -74,11 +64,13 @@ export const unitsSlice = createSlice({
       state.upcomingTurnUnitIds = state.upcomingTurnUnitIds.filter(
         (unitId) => state.units[unitId].stats.hp.current > 0
       );
+      mutableEndTurn(state);
     },
     missUnit: (state, action: PayloadAction<MissEffect>) => {
       action.payload.targetUnitIds.forEach((unitId) => {
         state.units[unitId].stats.missCount.current += 1;
       });
+      mutableEndTurn(state);
     },
     healUnit: (state, action: PayloadAction<HealEffect>) => {
       action.payload.targets.forEach((target) => {
@@ -87,6 +79,7 @@ export const unitsSlice = createSlice({
           state.units[target.unitId].stats.hp.max
         );
       });
+      mutableEndTurn(state);
     },
   },
 });

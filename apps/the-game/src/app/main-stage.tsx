@@ -15,6 +15,7 @@ import { unitsSlice } from '../features/units';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
+import { Animable } from '../components/animable';
 
 interface Props {
   app: PIXI.Application;
@@ -36,13 +37,26 @@ const MIDDLE_ANCHOR = new PIXI.Point(0.5, 0.5);
 const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
   duration: 750,
   loop: true,
-  pingPong: false,
+  pingPong: true,
   keyframes: {
     from: {
       lineColor: 0x72bcd4,
     },
     to: {
       lineColor: 0xc1e1ec,
+    },
+  },
+};
+const MISS_FRAME_ANIMATION: TweenAnimation = {
+  duration: 750,
+  loop: false,
+  pingPong: false,
+  keyframes: {
+    from: {
+      alpha: 1,
+    },
+    to: {
+      alpha: 0,
     },
   },
 };
@@ -221,7 +235,7 @@ const StageComponent: React.FC<Props> = ({
                 >
                   <UnitComponent width={width} height={height} unit={unit} />
                   {currentTurnUnitId === unit.id && (
-                    <Rect
+                    <Animable
                       width={width}
                       height={height}
                       lineWidth={6}
@@ -242,6 +256,19 @@ const StageComponent: React.FC<Props> = ({
                       <Text text={'DEAD'} anchor={MIDDLE_ANCHOR} />
                     </Container>
                   </Container>
+                  <Animable
+                    width={width}
+                    height={height}
+                    fillColor={0xeeeeee}
+                    tweenManager={tweenManager}
+                    alpha={0}
+                    animation={MISS_FRAME_ANIMATION}
+                    animationTrigger={unit.stats.missCount.current}
+                  >
+                    <Container x={width / 2} y={height / 2}>
+                      <Text text={'MISS'} anchor={MIDDLE_ANCHOR} />
+                    </Container>
+                  </Animable>
                 </Container>
               ) : null;
             }}

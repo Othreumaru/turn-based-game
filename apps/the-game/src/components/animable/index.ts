@@ -1,0 +1,1 @@
+export { Animable } from './animable';

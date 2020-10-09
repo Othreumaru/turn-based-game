@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { UnitMap } from '../components/types';
+import { Stat, UnitActions, UnitMap } from '../components/types';
 import { SLOTS, unitIsDead } from './game-logic';
 import { useEffect, useState } from 'react';
 import { TeamContainer } from '../components/team-container/team-container';
@@ -32,7 +32,6 @@ const TEAM_SLOT_X_OFFSET = 10;
 const PLAYER_TEAM_ANCHOR = new PIXI.Point(0, 0.5);
 const ENEMY_TEAM_ANCHOR = new PIXI.Point(1, 0.5);
 const MOUSE_OVER_LINE_COLOR = 0xff0000;
-const MIDDLE_ANCHOR = new PIXI.Point(0.5, 0.5);
 
 const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
   duration: 750,
@@ -47,18 +46,31 @@ const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
     },
   },
 };
-const MISS_FRAME_ANIMATION: TweenAnimation = {
-  duration: 750,
+
+const TAKE_DMG_ANIMATION: TweenAnimation = {
+  duration: 300,
   loop: false,
-  pingPong: false,
+  pingPong: true,
   keyframes: {
     from: {
-      alpha: 1,
+      x: 0,
     },
     to: {
-      alpha: 0,
+      x: 40,
     },
   },
+};
+
+const getAttackDetails = (action: UnitActions) => {
+  if (action.type === 'attack-action') {
+    return `${action.minDmg} - ${action.maxDmg}`;
+  } else {
+    return `${action.minHeal} - ${action.maxHeal}`;
+  }
+};
+
+const getChanceDetails = (stat: Stat) => {
+  return `${stat.current * 100}%`;
 };
 
 const getTeamConfig: (
@@ -171,6 +183,7 @@ const StageComponent: React.FC<Props> = ({
           height={QUEUE_UNIT_SIZE}
           width={QUEUE_UNIT_SIZE}
           unit={units[currentTurnUnitId]}
+          tweenManager={tweenManager}
         />
         <Rect
           width={QUEUE_UNIT_SIZE}
@@ -193,6 +206,7 @@ const StageComponent: React.FC<Props> = ({
             mouseout={onMouseOut}
           >
             <UnitComponent
+              tweenManager={tweenManager}
               key={unit.id}
               height={QUEUE_UNIT_SIZE}
               width={QUEUE_UNIT_SIZE}
@@ -233,7 +247,20 @@ const StageComponent: React.FC<Props> = ({
                   mouseout={onMouseOut}
                   click={unitClick(unit.id)}
                 >
-                  <UnitComponent width={width} height={height} unit={unit} />
+                  <Animable
+                    tweenManager={tweenManager}
+                    animationTrigger={unit.stats.hp.current + unit.stats.attackCount.current}
+                    width={width}
+                    height={height}
+                    animation={TAKE_DMG_ANIMATION}
+                  >
+                    <UnitComponent
+                      width={width}
+                      height={height}
+                      unit={unit}
+                      tweenManager={tweenManager}
+                    />
+                  </Animable>
                   {currentTurnUnitId === unit.id && (
                     <Animable
                       width={width}
@@ -250,31 +277,48 @@ const StageComponent: React.FC<Props> = ({
                     lineWidth={3}
                     alpha={mouseOverUnitId === unit.id ? 1 : 0}
                   />
-                  <Container alpha={unitIsDead(unit) ? 1 : 0}>
-                    <Rect width={width} height={height} fillColor={0xeeeeee} />
-                    <Container x={width / 2} y={height / 2}>
-                      <Text text={'DEAD'} anchor={MIDDLE_ANCHOR} />
-                    </Container>
-                  </Container>
-                  <Animable
-                    width={width}
-                    height={height}
-                    fillColor={0xeeeeee}
-                    tweenManager={tweenManager}
-                    alpha={0}
-                    animation={MISS_FRAME_ANIMATION}
-                    animationTrigger={unit.stats.missCount.current}
-                  >
-                    <Container x={width / 2} y={height / 2}>
-                      <Text text={'MISS'} anchor={MIDDLE_ANCHOR} />
-                    </Container>
-                  </Animable>
                 </Container>
               ) : null;
             }}
           </TeamContainer>
         );
       })}
+      {units[currentTurnUnitId] && (
+        <Text
+          x={50}
+          y={20}
+          text={'Name: ' + units[currentTurnUnitId].name}
+          anchor={new PIXI.Point(0, 0)}
+          style={{ fontSize: 18, fontWeight: 'bold' }}
+        />
+      )}
+      {units[currentTurnUnitId] && (
+        <Text
+          x={50}
+          y={50}
+          text={'Attack: ' + getAttackDetails(units[currentTurnUnitId].action)}
+          anchor={new PIXI.Point(0, 0)}
+          style={{ fontSize: 18, fontWeight: 'bold' }}
+        />
+      )}
+      {units[currentTurnUnitId] && (
+        <Text
+          x={50}
+          y={80}
+          text={'Hit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.hitChance)}
+          anchor={new PIXI.Point(0, 0)}
+          style={{ fontSize: 18, fontWeight: 'bold' }}
+        />
+      )}
+      {units[currentTurnUnitId] && (
+        <Text
+          x={50}
+          y={110}
+          text={'Crit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.critChance)}
+          anchor={new PIXI.Point(0, 0)}
+          style={{ fontSize: 18, fontWeight: 'bold' }}
+        />
+      )}
       <Button
         x={800}
         y={900}

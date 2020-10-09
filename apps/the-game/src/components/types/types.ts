@@ -28,6 +28,7 @@ export interface Stats {
   level: Stat;
   initiative: Stat;
   missCount: Stat;
+  attackCount: Stat;
 }
 
 export interface AttackAction {

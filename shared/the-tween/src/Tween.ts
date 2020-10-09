@@ -60,16 +60,6 @@ export default class Tween extends PIXI.utils.EventEmitter {
     return this;
   }
 
-  to(data: any) {
-    this._to = data;
-    return this;
-  }
-
-  from(data: any) {
-    this._from = data;
-    return this;
-  }
-
   interpolators(data: any) {
     this._interpolators = data;
     return this;
@@ -152,17 +142,6 @@ export default class Tween extends PIXI.utils.EventEmitter {
       if (ended) {
         if (this.animation.pingPong && !this._pingPong) {
           this._pingPong = true;
-          _to = this._to;
-          _from = this._from;
-          this._from = _to;
-          this._to = _from;
-
-          if (this.path) {
-            _to = this.pathTo;
-            _from = this.pathFrom;
-            this.pathTo = _from;
-            this.pathFrom = _to;
-          }
 
           this.emit('pingpong');
           this._elapsedTime = 0;
@@ -205,46 +184,16 @@ export default class Tween extends PIXI.utils.EventEmitter {
     }
   }
 
-  /*_parseData() {
-    if (this.isStarted) return;
-
-    if (!this._from) this._from = {};
-    _parseRecursiveData(this.animation.keyframes.to, this.animation.keyframes.from, this.animation);
-
-    if (this.path) {
-      let distance = this.path.totalDistance();
-      if (this.pathReverse) {
-        this.pathFrom = distance;
-        this.pathTo = 0;
-      } else {
-        this.pathFrom = 0;
-        this.pathTo = distance;
-      }
-    }
-  }*/
-
   _apply(time: number) {
     _recursiveApplyTween(
-      this.animation.keyframes.to,
-      this.animation.keyframes.from,
+      this._pingPong ? this.animation.keyframes.from : this.animation.keyframes.to,
+      this._pingPong ? this.animation.keyframes.to : this.animation.keyframes.from,
       this._interpolators,
       this.target,
       time,
       this._elapsedTime,
       this.easing
     );
-
-    /* if (this.path) {
-      let time = this.animation.pingPong ? this.animation.duration / 2 : this.animation.duration;
-      let b = this.pathFrom;
-      let c = this.pathTo - this.pathFrom;
-      let d = time;
-      let t = this._elapsedTime / d;
-
-      let distance = b + c * this.easing(t);
-      let pos = this.path.getPointAtDistance(distance);
-      this.target.position.set(pos.x, pos.y);
-    }*/
   }
 
   _canUpdate() {
@@ -287,23 +236,6 @@ function _recursiveApplyTween(
     }
   }
 }
-
-/*function _parseRecursiveData(
-  to: { [x: string]: any },
-  from: { [x: string]: any },
-  target: { [x: string]: any }
-) {
-  for (let k in to) {
-    if (from[k] !== 0 && !from[k]) {
-      if (_isObject(target[k])) {
-        from[k] = JSON.parse(JSON.stringify(target[k]));
-        _parseRecursiveData(to[k], from[k], target[k]);
-      } else {
-        from[k] = target[k];
-      }
-    }
-  }
-}*/
 
 function _isObject(obj: any) {
   return Object.prototype.toString.call(obj) === '[object Object]';

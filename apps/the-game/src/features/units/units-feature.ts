@@ -58,6 +58,7 @@ export const unitsSlice = createSlice({
       mutableEndTurn(state);
     },
     dmgUnit: (state, action: PayloadAction<DmgEffect>) => {
+      state.units[action.payload.sourceUnitId].stats.attackCount.current += 1;
       action.payload.targets.forEach((target) => {
         state.units[target.unitId].stats.hp.current -= target.dmgAmount;
       });
@@ -67,6 +68,7 @@ export const unitsSlice = createSlice({
       mutableEndTurn(state);
     },
     missUnit: (state, action: PayloadAction<MissEffect>) => {
+      state.units[action.payload.sourceUnitId].stats.attackCount.current += 1;
       action.payload.targetUnitIds.forEach((unitId) => {
         state.units[unitId].stats.missCount.current += 1;
       });

@@ -1,10 +1,10 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
 import { Stat, UnitActions, UnitMap } from '../components/types';
 import { SLOTS, unitIsDead } from './game-logic';
-import { useEffect, useState } from 'react';
 import { TeamContainer } from '../components/team-container/team-container';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
@@ -73,6 +73,14 @@ const getChanceDetails = (stat: Stat) => {
   return `${stat.current * 100}%`;
 };
 
+const getHealthDetails = (stat: Stat) => {
+  return `${stat.current}/${stat.max}`;
+};
+
+const getPlayerUnitInAttackRange = (units: UnitMap) => {
+  return Object.values(units).filter((u) => u.stats.hp.current > 0 && u.team === 'player')[0]?.id;
+};
+
 const getTeamConfig: (
   viewportWidth: number
 ) => {
@@ -81,7 +89,12 @@ const getTeamConfig: (
   orientation: 'left' | 'right';
   anchor: PIXI.Point;
 }[] = (viewportWidth) => [
-  { team: 'player', x: TEAM_SLOT_X_OFFSET, orientation: 'right', anchor: PLAYER_TEAM_ANCHOR },
+  {
+    team: 'player',
+    x: TEAM_SLOT_X_OFFSET,
+    orientation: 'right',
+    anchor: PLAYER_TEAM_ANCHOR,
+  },
   {
     team: 'enemy',
     x: viewportWidth - TEAM_SLOT_X_OFFSET,
@@ -116,10 +129,61 @@ const StageComponent: React.FC<Props> = ({
         createWarrior('slot12'),
         createHealer('slot01'),
         createOrc('slot11'),
+        createOrc('slot10'),
         createGoblin('slot01'),
       ])
     );
   }, []);
+
+  useEffect(() => {
+    if (units[currentTurnUnitId] && units[currentTurnUnitId].team === 'enemy') {
+      setTimeout(() => {
+        const target = getPlayerUnitInAttackRange(units);
+        if (!target) {
+          return;
+        }
+        performUnitAction(
+          units[currentTurnUnitId],
+          (dmgAmount, isCrit) => {
+            dispatch(
+              unitsSlice.actions.dmgUnit({
+                sourceUnitId: units[currentTurnUnitId].id,
+                targets: [
+                  {
+                    unitId: target,
+                    dmgAmount,
+                    isCrit,
+                  },
+                ],
+              })
+            );
+          },
+          (healAmount, isCrit) => {
+            dispatch(
+              unitsSlice.actions.healUnit({
+                sourceUnitId: units[currentTurnUnitId].id,
+                targets: [
+                  {
+                    unitId: units[currentTurnUnitId].id,
+                    healAmount,
+                    isCrit,
+                  },
+                ],
+              })
+            );
+          },
+          () => {
+            dispatch(
+              unitsSlice.actions.missUnit({
+                sourceUnitId: units[currentTurnUnitId].id,
+                targetUnitIds: [target],
+              })
+            );
+          }
+        );
+      }, 1000);
+    }
+  }, [units, currentTurnUnitId]);
 
   const onMouseOver = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
@@ -128,6 +192,9 @@ const StageComponent: React.FC<Props> = ({
     setMouseOverUnitId(undefined);
   };
   const unitClick = (unitId: string) => () => {
+    if (units[currentTurnUnitId].team === 'enemy' || unitIsDead(units[currentTurnUnitId])) {
+      return;
+    }
     const sourceUnit = units[currentTurnUnitId];
     performUnitAction(
       sourceUnit,
@@ -242,7 +309,7 @@ const StageComponent: React.FC<Props> = ({
                   y={y}
                   width={width}
                   height={height}
-                  interactive={!unitIsDead(unit)}
+                  interactive={true}
                   mouseover={onMouseOver(unit.id)}
                   mouseout={onMouseOut}
                   click={unitClick(unit.id)}
@@ -283,42 +350,41 @@ const StageComponent: React.FC<Props> = ({
           </TeamContainer>
         );
       })}
-      {units[currentTurnUnitId] && (
-        <Text
-          x={50}
-          y={20}
-          text={'Name: ' + units[currentTurnUnitId].name}
-          anchor={new PIXI.Point(0, 0)}
-          style={{ fontSize: 18, fontWeight: 'bold' }}
-        />
-      )}
-      {units[currentTurnUnitId] && (
-        <Text
-          x={50}
-          y={50}
-          text={'Attack: ' + getAttackDetails(units[currentTurnUnitId].action)}
-          anchor={new PIXI.Point(0, 0)}
-          style={{ fontSize: 18, fontWeight: 'bold' }}
-        />
-      )}
-      {units[currentTurnUnitId] && (
-        <Text
-          x={50}
-          y={80}
-          text={'Hit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.hitChance)}
-          anchor={new PIXI.Point(0, 0)}
-          style={{ fontSize: 18, fontWeight: 'bold' }}
-        />
-      )}
-      {units[currentTurnUnitId] && (
-        <Text
-          x={50}
-          y={110}
-          text={'Crit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.critChance)}
-          anchor={new PIXI.Point(0, 0)}
-          style={{ fontSize: 18, fontWeight: 'bold' }}
-        />
-      )}
+      {units[currentTurnUnitId] &&
+        [
+          'Name: ' + units[currentTurnUnitId].name,
+          'Health: ' + getHealthDetails(units[currentTurnUnitId].stats.hp),
+          'Attack: ' + getAttackDetails(units[currentTurnUnitId].action),
+          'Hit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.hitChance),
+          'Crit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.critChance),
+        ].map((text, index) => (
+          <Text
+            key={`${index}`}
+            x={30}
+            y={20 + index * 30}
+            text={text}
+            anchor={new PIXI.Point(0, 0)}
+            style={{ fontSize: 18, fontWeight: 'bold' }}
+          />
+        ))}
+      {mouseOverUnitId &&
+        units[mouseOverUnitId] &&
+        [
+          'Name: ' + units[mouseOverUnitId].name,
+          'Health: ' + getHealthDetails(units[mouseOverUnitId].stats.hp),
+          'Attack: ' + getAttackDetails(units[mouseOverUnitId].action),
+          'Hit Chance: ' + getChanceDetails(units[mouseOverUnitId].stats.hitChance),
+          'Crit Chance: ' + getChanceDetails(units[mouseOverUnitId].stats.critChance),
+        ].map((text, index) => (
+          <Text
+            key={`${index}`}
+            x={200}
+            y={20 + index * 30}
+            text={text}
+            anchor={new PIXI.Point(0, 0)}
+            style={{ fontSize: 18, fontWeight: 'bold' }}
+          />
+        ))}
       <Button
         x={800}
         y={900}

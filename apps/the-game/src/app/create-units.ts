@@ -72,8 +72,8 @@ export const createOrc = (slotId: SlotIds): Unit => {
     },
     action: {
       type: 'attack-action',
-      minDmg: 50,
-      maxDmg: 80,
+      minDmg: 40,
+      maxDmg: 60,
     },
     tags: [],
   };
@@ -91,7 +91,7 @@ export const createGoblin = (slotId: SlotIds): Unit => {
       xp: { current: 0, max: 1000 },
       initiative: { current: 40, max: 100 },
       hitChance: { current: 0.8, max: 1 },
-      critChance: { current: 0.4, max: 1 },
+      critChance: { current: 0.6, max: 1 },
       critMult: { current: 2, max: 10 },
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },

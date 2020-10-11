@@ -39,7 +39,7 @@ export const unitsSlice = createSlice({
   name: 'units',
   initialState,
   reducers: {
-    spawnUnits(state, action: PayloadAction<Unit[]>) {
+    spawnUnits: (state, action: PayloadAction<Unit[]>) => {
       const units = action.payload;
       const unitIds = sortUnits([
         ...state.upcomingTurnUnitIds.map((unitId) => state.units[unitId]),

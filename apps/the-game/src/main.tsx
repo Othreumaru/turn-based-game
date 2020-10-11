@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { useState } from 'react';
 import * as ReactDOM from 'react-dom';
-import { MainStage, store } from './app';
+import { AppContext, StageSwitcher, store } from './app';
 import * as PIXI from 'pixi.js';
 window.PIXI = PIXI;
 import { TweenManager } from '@zalgoforge/the-tween';
 import { Provider } from 'react-redux';
+import { Stage } from 'react-pixi-fiber';
+import { hot } from 'react-hot-loader/root';
 
 const tweenManager: TweenManager = new TweenManager();
 
@@ -44,7 +46,7 @@ const createApp = (canvas: HTMLCanvasElement) => {
   return app;
 };
 
-const CanvasComponent = ({ MainComponent }: any) => {
+const CanvasComponent = hot(({ MainComponent }: any) => {
   const [app, setApp] = useState<PIXI.Application>();
 
   return (
@@ -56,32 +58,31 @@ const CanvasComponent = ({ MainComponent }: any) => {
       }}
     >
       {app ? (
-        <MainComponent
-          app={app}
-          tweenManager={tweenManager}
-          width={size.width}
-          height={size.height}
-        />
+        <Stage app={app}>
+          <Provider store={store}>
+            <AppContext.Provider value={{ app, tweenManager }}>
+              <MainComponent tweenManager={tweenManager} width={size.width} height={size.height} />
+            </AppContext.Provider>
+          </Provider>
+        </Stage>
       ) : (
         'Initializing...'
       )}
     </canvas>
   );
-};
+});
 
 const renderApp = (Main: React.FC<any>) => {
   ReactDOM.render(
-    <Provider store={store}>
-      <CanvasComponent MainComponent={Main} />
-    </Provider>,
+    <CanvasComponent MainComponent={Main} store={store} />,
     document.getElementById('root')
   );
 };
 
-renderApp(MainStage);
+renderApp(StageSwitcher);
 
 if (module.hot) {
   module.hot.accept('./app', () => {
-    renderApp(require('./app').Stage);
+    renderApp(require('./app').StageSwitcher);
   });
 }

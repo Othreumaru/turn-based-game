@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Container, Stage, Text } from 'react-pixi-fiber';
-import { hot } from 'react-hot-loader/root';
+import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
 import { SlotIds, Stat, Unit, UnitActions, UnitMap } from '../components/types';
 import { SLOTS, unitIsDead } from './game-logic';
@@ -18,8 +17,8 @@ import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 
 interface Props {
-  app: PIXI.Application;
   tweenManager: TweenManager;
+  dispatch: ReturnType<typeof useDispatch>;
   width: number;
   height: number;
 }
@@ -175,8 +174,7 @@ const getTeamConfig: (
   },
 ];
 
-const StageComponent: React.FC<Props> = ({
-  app,
+export const BattleStageComponent: React.FC<Props> = ({
   tweenManager,
   width: viewportWidth,
   height: viewportHeight,
@@ -324,7 +322,7 @@ const StageComponent: React.FC<Props> = ({
   };
 
   return (
-    <Stage app={app}>
+    <Container>
       <Container
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
@@ -332,12 +330,14 @@ const StageComponent: React.FC<Props> = ({
         mouseover={onMouseOver(currentTurnUnitId)}
         mouseout={onMouseOut}
       >
-        <UnitComponent
-          height={QUEUE_UNIT_SIZE}
-          width={QUEUE_UNIT_SIZE}
-          unit={units[currentTurnUnitId]}
-          tweenManager={tweenManager}
-        />
+        {currentTurnUnitId !== '' && (
+          <UnitComponent
+            height={QUEUE_UNIT_SIZE}
+            width={QUEUE_UNIT_SIZE}
+            unit={units[currentTurnUnitId]}
+            tweenManager={tweenManager}
+          />
+        )}
         <Rect
           width={QUEUE_UNIT_SIZE}
           height={QUEUE_UNIT_SIZE}
@@ -491,8 +491,6 @@ const StageComponent: React.FC<Props> = ({
           dispatch(unitsSlice.actions.endTurn());
         }}
       />
-    </Stage>
+    </Container>
   );
 };
-
-export const MainStage = hot(StageComponent);

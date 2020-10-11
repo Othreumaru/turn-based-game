@@ -33,12 +33,16 @@ export interface Stats {
 
 export interface AttackAction {
   type: 'attack-action';
+  targetTeam: 'player' | 'enemy';
+  range: 'closest' | 'any' | 'all';
   minDmg: number;
   maxDmg: number;
 }
 
 export interface HealAction {
   type: 'heal-action';
+  targetTeam: 'player' | 'enemy';
+  range: 'closest' | 'any' | 'all';
   minHeal: number;
   maxHeal: number;
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Container, Stage, Text } from 'react-pixi-fiber';
 import { hot } from 'react-hot-loader/root';
 import * as PIXI from 'pixi.js';
-import { Stat, UnitActions, UnitMap } from '../components/types';
+import { SlotIds, Stat, Unit, UnitActions, UnitMap } from '../components/types';
 import { SLOTS, unitIsDead } from './game-logic';
 import { TeamContainer } from '../components/team-container/team-container';
 import { UnitComponent } from '../components/unit-component';
@@ -47,6 +47,20 @@ const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
   },
 };
 
+const TARGET_UNIT_BORDER_ANIMATION: TweenAnimation = {
+  duration: 750,
+  loop: true,
+  pingPong: true,
+  keyframes: {
+    from: {
+      lineColor: 0xff0000,
+    },
+    to: {
+      lineColor: 0xffdddd,
+    },
+  },
+};
+
 const TAKE_DMG_ANIMATION: TweenAnimation = {
   duration: 300,
   loop: false,
@@ -77,8 +91,66 @@ const getHealthDetails = (stat: Stat) => {
   return `${stat.current}/${stat.max}`;
 };
 
-const getPlayerUnitInAttackRange = (units: UnitMap) => {
-  return Object.values(units).filter((u) => u.stats.hp.current > 0 && u.team === 'player')[0]?.id;
+const getOpossiteTeam = (team: 'player' | 'enemy') => {
+  return team === 'player' ? 'enemy' : 'player';
+};
+
+const getPlayerUnitsInAttackRange = (
+  units: UnitMap,
+  sourceUnitId: string
+): { slots: SlotIds[]; team: 'player' | 'enemy' } => {
+  const source = units[sourceUnitId];
+  const aliveUnits = Object.values(units).filter((u) => u.stats.hp.current > 0);
+  const aliveEnemyUnits = aliveUnits.filter((u) => u.team === 'enemy');
+  const alivePlayerUnits = aliveUnits.filter((u) => u.team === 'player');
+  const thereArePlayerUnitsInFirstColumn =
+    alivePlayerUnits.filter((u) => SLOTS[u.slotId].column === 1).length !== 0;
+
+  if (source.action.type === 'attack-action') {
+    if (source.action.range === 'closest') {
+      if (!aliveEnemyUnits.length) {
+        return { slots: [], team: getOpossiteTeam(source.team) };
+      }
+      if (SLOTS[source.slotId].column === 0 && thereArePlayerUnitsInFirstColumn) {
+        return { slots: [], team: getOpossiteTeam(source.team) };
+      }
+      const columnToAttack =
+        aliveEnemyUnits.filter((u) => SLOTS[u.slotId].column === 1).length !== 0 ? 1 : 0;
+      const rowsToAttack =
+        SLOTS[source.slotId].row === 0
+          ? [0, 1]
+          : SLOTS[source.slotId].row === 1
+          ? [0, 1, 2]
+          : [1, 2];
+      return {
+        slots: rowsToAttack.map((row) => {
+          return Object.values(SLOTS)
+            .filter((s) => s.column === columnToAttack && s.row === row)
+            .map((s) => s.id)[0];
+        }),
+        team: getOpossiteTeam(source.team),
+      };
+    } else if (source.action.range === 'any') {
+      if (source.action.targetTeam === 'player') {
+        return { slots: alivePlayerUnits.map((p) => p.slotId), team: getOpossiteTeam(source.team) };
+      } else {
+        return { slots: aliveEnemyUnits.map((e) => e.slotId), team: getOpossiteTeam(source.team) };
+      }
+    } else if (source.action.range === 'all') {
+      return { slots: [], team: getOpossiteTeam(source.team) };
+    }
+    return { slots: [], team: getOpossiteTeam(source.team) };
+  }
+  if (source.action.type === 'heal-action') {
+    if (source.action.range === 'any') {
+      if (source.action.targetTeam === 'player') {
+        return { slots: alivePlayerUnits.map((p) => p.slotId), team: source.team };
+      }
+    } else {
+      return { slots: [], team: source.team };
+    }
+  }
+  return { slots: [], team: source.team };
 };
 
 const getTeamConfig: (
@@ -116,6 +188,20 @@ const StageComponent: React.FC<Props> = ({
   const upcomingTurnUnitIds = useSelector<RootState, string[]>(
     (state) => state.game.upcomingTurnUnitIds
   );
+  const unitsInAttackingRange: { slots: SlotIds[]; team: 'player' | 'enemy' } =
+    currentTurnUnitId !== ''
+      ? getPlayerUnitsInAttackRange(units, currentTurnUnitId)
+      : { slots: [], team: 'player' };
+  const slotToUnit: {
+    player: { [key: string]: Unit };
+    enemy: { [key: string]: Unit };
+  } = Object.values(units).reduce(
+    (acc, unit) => {
+      acc[unit.team][unit.slotId] = unit;
+      return acc;
+    },
+    { player: {} as any, enemy: {} as any }
+  );
 
   const dispatch = useDispatch();
 
@@ -138,8 +224,8 @@ const StageComponent: React.FC<Props> = ({
   useEffect(() => {
     if (units[currentTurnUnitId] && units[currentTurnUnitId].team === 'enemy') {
       setTimeout(() => {
-        const target = getPlayerUnitInAttackRange(units);
-        if (!target) {
+        const targets = getPlayerUnitsInAttackRange(units, currentTurnUnitId);
+        if (!targets.slots.length) {
           return;
         }
         performUnitAction(
@@ -150,7 +236,7 @@ const StageComponent: React.FC<Props> = ({
                 sourceUnitId: units[currentTurnUnitId].id,
                 targets: [
                   {
-                    unitId: target,
+                    unitId: slotToUnit[targets.team][targets.slots[0]].id,
                     dmgAmount,
                     isCrit,
                   },
@@ -176,7 +262,7 @@ const StageComponent: React.FC<Props> = ({
             dispatch(
               unitsSlice.actions.missUnit({
                 sourceUnitId: units[currentTurnUnitId].id,
-                targetUnitIds: [target],
+                targetUnitIds: [slotToUnit[targets.team][targets.slots[0]].id],
               })
             );
           }
@@ -337,6 +423,16 @@ const StageComponent: React.FC<Props> = ({
                       animation={SELECTED_UNIT_BORDER_ANIMATION}
                     />
                   )}
+                  {unitsInAttackingRange.slots.includes(unit.slotId) &&
+                    unit.team === unitsInAttackingRange.team && (
+                      <Animable
+                        width={width}
+                        height={height}
+                        lineWidth={6}
+                        tweenManager={tweenManager}
+                        animation={TARGET_UNIT_BORDER_ANIMATION}
+                      />
+                    )}
                   <Rect
                     width={width}
                     height={height}

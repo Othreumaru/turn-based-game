@@ -20,6 +20,8 @@ export const createWarrior = (slotId: SlotIds): Unit => {
     },
     action: {
       type: 'attack-action',
+      range: 'closest',
+      targetTeam: 'enemy',
       minDmg: 22,
       maxDmg: 28,
     },
@@ -46,6 +48,8 @@ export const createHealer = (slotId: SlotIds): Unit => {
     },
     action: {
       type: 'heal-action',
+      targetTeam: 'player',
+      range: 'any',
       minHeal: 22,
       maxHeal: 28,
     },
@@ -72,6 +76,8 @@ export const createOrc = (slotId: SlotIds): Unit => {
     },
     action: {
       type: 'attack-action',
+      targetTeam: 'player',
+      range: 'closest',
       minDmg: 40,
       maxDmg: 60,
     },
@@ -98,6 +104,8 @@ export const createGoblin = (slotId: SlotIds): Unit => {
     },
     action: {
       type: 'attack-action',
+      targetTeam: 'player',
+      range: 'any',
       minDmg: 15,
       maxDmg: 20,
     },

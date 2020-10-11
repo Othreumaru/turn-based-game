@@ -8,20 +8,16 @@ import { TeamContainer } from '../components/team-container/team-container';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
-import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
+import { TweenAnimation } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
 import { unitsSlice } from '../features/units';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
+import { AppContext } from './app-context';
 
-interface Props {
-  tweenManager: TweenManager;
-  dispatch: ReturnType<typeof useDispatch>;
-  width: number;
-  height: number;
-}
+interface Props {}
 
 const CURRENT_UNIT_Y_OFFSET = 10;
 const QUEUE_UNIT_SIZE = 80;
@@ -174,11 +170,10 @@ const getTeamConfig: (
   },
 ];
 
-export const BattleStageComponent: React.FC<Props> = ({
-  tweenManager,
-  width: viewportWidth,
-  height: viewportHeight,
-}) => {
+export const BattleStageComponent: React.FC<Props> = () => {
+  const { width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
+    AppContext
+  );
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);

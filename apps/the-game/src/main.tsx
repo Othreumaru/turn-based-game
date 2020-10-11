@@ -60,8 +60,10 @@ const CanvasComponent = hot(({ MainComponent }: any) => {
       {app ? (
         <Stage app={app}>
           <Provider store={store}>
-            <AppContext.Provider value={{ app, tweenManager }}>
-              <MainComponent tweenManager={tweenManager} width={size.width} height={size.height} />
+            <AppContext.Provider
+              value={{ app, tweenManager, width: size.width, height: size.height }}
+            >
+              <MainComponent />
             </AppContext.Provider>
           </Provider>
         </Stage>

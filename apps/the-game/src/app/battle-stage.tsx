@@ -11,7 +11,6 @@ import { Button } from '../components/button/button';
 import { TweenAnimation } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
 import { unitsSlice } from '../features/units';
-import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
@@ -199,20 +198,6 @@ export const BattleStageComponent: React.FC<Props> = () => {
   const dispatch = useDispatch();
 
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
-
-  useEffect(() => {
-    dispatch(
-      unitsSlice.actions.spawnUnits([
-        createWarrior('slot10'),
-        createWarrior('slot11'),
-        createWarrior('slot12'),
-        createHealer('slot01'),
-        createOrc('slot11'),
-        createOrc('slot10'),
-        createGoblin('slot01'),
-      ])
-    );
-  }, []);
 
   useEffect(() => {
     if (units[currentTurnUnitId] && units[currentTurnUnitId].team === 'enemy') {

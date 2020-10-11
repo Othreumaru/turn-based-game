@@ -4,7 +4,7 @@ import * as PIXI from 'pixi.js';
 import { Rect } from '../rect';
 import { Unit } from '../types';
 import { unitIsDead } from '../../app/game-logic';
-import { MIDDLE_ANCHOR } from '../../utils';
+import { CENTER_X_CENTER_Y_ANCHOR } from '../../utils';
 import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
 
@@ -58,7 +58,7 @@ const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit, tweenMa
       <Container alpha={unitIsDead(unit) ? 1 : 0}>
         <Rect width={width} height={height} fillColor={0xeeeeee} />
         <Container x={width / 2} y={height / 2}>
-          <Text text={'DEAD'} anchor={MIDDLE_ANCHOR} />
+          <Text text={'DEAD'} anchor={CENTER_X_CENTER_Y_ANCHOR} />
         </Container>
       </Container>
       <Animable
@@ -71,7 +71,7 @@ const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit, tweenMa
         animationTrigger={unit.stats.missCount.current}
       >
         <Container x={width / 2} y={height / 2}>
-          <Text text={'MISS'} anchor={MIDDLE_ANCHOR} />
+          <Text text={'MISS'} anchor={CENTER_X_CENTER_Y_ANCHOR} />
         </Container>
       </Animable>
     </Container>

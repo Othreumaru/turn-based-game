@@ -18,13 +18,13 @@ const StageSwitcherComponent: React.FC<Props> = ({}) => {
   useEffect(() => {
     dispatch(
       unitsSlice.actions.spawnUnits([
-        createWarrior('slot10'),
-        createWarrior('slot11'),
-        createWarrior('slot12'),
-        createHealer('slot01'),
-        createOrc('slot11'),
-        createOrc('slot10'),
-        createGoblin('slot01'),
+        createWarrior('player', 1, 0),
+        createWarrior('player', 1, 1),
+        createWarrior('player', 1, 2),
+        createHealer('player', 0, 1),
+        createOrc('enemy', 1, 1),
+        createOrc('enemy', 1, 0),
+        createGoblin('enemy', 0, 1),
       ])
     );
   }, []);

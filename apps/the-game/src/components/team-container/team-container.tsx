@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Rect } from '../rect';
-import { Team, SlotIds } from '../types';
+import { SlotPointer } from '../types';
+import { getLayout } from '../../utils/utils';
 
 export interface ChildrenCallbackData {
-  slotId: SlotIds;
+  slot: SlotPointer;
   x: number;
   y: number;
   width: number;
@@ -13,7 +14,9 @@ export interface ChildrenCallbackData {
 interface Props {
   x: number;
   y: number;
-  slots: Team;
+  rows: number;
+  columns: number;
+  name: string;
   orientation: 'left' | 'right';
   anchor: PIXI.Point;
   children: (data: ChildrenCallbackData) => any;
@@ -38,10 +41,19 @@ const selectYPosition = (y: number, row: number, anchor: PIXI.Point) => {
   return y + row * (SLOT_SIZE + SLOT_SPACER) - anchor.y * HEIGHT;
 };
 
-export const TeamContainer: React.FC<Props> = ({ children, x, y, orientation, slots, anchor }) => {
+export const TeamContainer: React.FC<Props> = ({
+  children,
+  name,
+  x,
+  y,
+  rows,
+  columns,
+  orientation,
+  anchor,
+}) => {
   return (
     <>
-      {Object.entries(slots).map(([id, { column, row }]) => {
+      {getLayout(name, rows, columns).map(({ id, column, row }) => {
         return (
           <Rect
             key={id}
@@ -54,12 +66,12 @@ export const TeamContainer: React.FC<Props> = ({ children, x, y, orientation, sl
         );
       })}
       {typeof children === 'function'
-        ? Object.values(slots)
-            .map((slot) => {
+        ? getLayout(name, rows, columns)
+            .map(({ id, row, column }) => {
               return children({
-                slotId: slot.id,
-                x: selectXPosition(x, slot.column, orientation, anchor),
-                y: selectYPosition(y, slot.row, anchor),
+                slot: { id, name, row, column },
+                x: selectXPosition(x, column, orientation, anchor),
+                y: selectYPosition(y, row, anchor),
                 width: SLOT_SIZE,
                 height: SLOT_SIZE,
               });

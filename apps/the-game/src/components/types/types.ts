@@ -14,6 +14,13 @@ export type Slot12 = { id: Slot12ID; column: 1; row: 2 };
 
 export type SlotIds = Slot00ID | Slot01ID | Slot02ID | Slot10ID | Slot11ID | Slot12ID;
 
+export interface SlotPointer {
+  id: string;
+  name: string;
+  row: number;
+  column: number;
+}
+
 export interface Stat {
   current: number;
   max: number;
@@ -52,7 +59,7 @@ export type UnitActions = AttackAction | HealAction;
 export interface Unit {
   id: string;
   team: 'player' | 'enemy';
-  slotId: SlotIds;
+  slot: SlotPointer;
   name: string;
   stats: Stats;
   action: UnitActions;

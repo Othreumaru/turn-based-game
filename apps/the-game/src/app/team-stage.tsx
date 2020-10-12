@@ -2,16 +2,16 @@ import * as React from 'react';
 import * as PIXI from 'pixi.js';
 import { Container, Text } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
-import { SLOTS } from './game-logic';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { TeamContainer } from '../components/team-container/team-container';
 import { AppContext } from './app-context';
-import { LEFT_X_CENTER_Y_ANCHOR } from '../utils/constants';
+import { LEFT_X_CENTER_Y_ANCHOR } from '../utils';
 import { useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
 import { UnitMap } from '../components/types';
 import { useState } from 'react';
+import { BenchMap } from '../features/team-chooser';
 
 interface Props {
   onDone: () => void;
@@ -24,6 +24,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const { height: viewportHeight, tweenManager } = React.useContext(AppContext);
   const viewportCenterY = viewportHeight / 2;
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const bench = useSelector<RootState, BenchMap>((state) => state.teamChooser.unitsOnBench);
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
   const onMouseOver = (unitId: string) => () => {
@@ -35,17 +36,19 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
       <TeamContainer
         x={TEAM_SLOT_X_OFFSET}
         y={viewportCenterY}
-        slots={SLOTS}
-        orientation={'left'}
+        name={'player'}
+        columns={2}
+        rows={3}
+        orientation={'right'}
         anchor={LEFT_X_CENTER_Y_ANCHOR}
       >
-        {({ slotId, x, y, width, height }) => {
+        {({ slot, x, y, width, height }) => {
           const unit = Object.values(units)
             .filter((u) => u.team === 'player')
-            .find((u) => u.slotId === slotId);
+            .find((u) => u.slot.id === slot.id);
           return unit ? (
             <Container
-              key={slotId}
+              key={slot.id}
               x={x}
               y={y}
               width={width}
@@ -73,7 +76,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         }}
       </TeamContainer>
       <Text
-        text={'Hello from team select stage'}
+        text={`Slots on bench ${Object.keys(bench).length}`}
         anchor={new PIXI.Point(0, 0)}
         style={{ fontSize: 18, fontWeight: 'bold' }}
       />

@@ -1,4 +1,4 @@
-export { peek, getRandomInt, rollChance } from './utils';
+export { peek, getRandomInt, rollChance, toSlotId, getLayout } from './utils';
 export {
   LEFT_X_CENTER_Y_ANCHOR,
   RIGHT_X_CENTER_Y_ANCHOR,

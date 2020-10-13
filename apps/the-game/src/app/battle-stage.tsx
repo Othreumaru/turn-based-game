@@ -15,7 +15,7 @@ import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
-import { getLayout } from '../utils/utils';
+import { getLayout } from '../utils';
 
 interface Props {}
 
@@ -358,6 +358,7 @@ export const BattleStageComponent: React.FC<Props> = () => {
             x={x}
             y={viewportCenterY}
             name={team}
+            label={'Enemy Team'}
             rows={3}
             columns={2}
             orientation={orientation}

@@ -35,5 +35,5 @@ export type BenchMap = {
 };
 
 export interface TeamChooser {
-  unitsOnBench: BenchMap;
+  // unitsOnBench: BenchMap;
 }

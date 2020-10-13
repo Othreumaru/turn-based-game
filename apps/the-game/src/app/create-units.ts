@@ -6,7 +6,6 @@ export const createWarrior = (name: string, column: number, row: number): Unit =
   return {
     id: uuidv4(),
     name: 'warrior',
-    team: 'player',
     slot: { id: toSlotId(column, row), name, row, column },
     stats: {
       hp: { current: 120, max: 120 },
@@ -34,7 +33,6 @@ export const createHealer = (name: string, column: number, row: number): Unit =>
   return {
     id: uuidv4(),
     name: 'healer',
-    team: 'player',
     slot: { id: toSlotId(column, row), name, row, column },
     stats: {
       hp: { current: 120, max: 120 },
@@ -62,7 +60,6 @@ export const createOrc = (name: string, column: number, row: number): Unit => {
   return {
     id: uuidv4(),
     name: 'orc',
-    team: 'enemy',
     slot: { id: toSlotId(column, row), name, row, column },
     stats: {
       hp: { current: 120, max: 120 },
@@ -90,7 +87,6 @@ export const createGoblin = (name: string, column: number, row: number): Unit =>
   return {
     id: uuidv4(),
     name: 'goblin',
-    team: 'enemy',
     slot: { id: toSlotId(column, row), name, row, column },
     stats: {
       hp: { current: 120, max: 120 },

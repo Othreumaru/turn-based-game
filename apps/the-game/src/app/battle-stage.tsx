@@ -4,7 +4,7 @@ import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
 import { SlotPointer, Stat, Unit, UnitActions, UnitMap } from '../components/types';
 import { unitIsDead } from './game-logic';
-import { TeamContainer } from '../components/team-container/team-container';
+import { RenderCallback, TeamContainer } from '../components/team-container';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
@@ -16,6 +16,7 @@ import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getLayout } from '../utils';
+import { getOppositeTeam, getTeam, isEnemy, isPlayer } from './selectors';
 
 interface Props {}
 
@@ -86,28 +87,24 @@ const getHealthDetails = (stat: Stat) => {
   return `${stat.current}/${stat.max}`;
 };
 
-const getOpossiteTeam = (team: 'player' | 'enemy') => {
-  return team === 'player' ? 'enemy' : 'player';
-};
-
 const getPlayerUnitsInAttackRange = (
   units: UnitMap,
   sourceUnitId: string
-): { slots: SlotPointer[]; team: 'player' | 'enemy' } => {
+): { slots: SlotPointer[]; team: string } => {
   const source = units[sourceUnitId];
   const aliveUnits = Object.values(units).filter((u) => u.stats.hp.current > 0);
-  const aliveEnemyUnits = aliveUnits.filter((u) => u.team === 'enemy');
-  const alivePlayerUnits = aliveUnits.filter((u) => u.team === 'player');
+  const aliveEnemyUnits = aliveUnits.filter(isEnemy);
+  const alivePlayerUnits = aliveUnits.filter(isPlayer);
   const thereArePlayerUnitsInFirstColumn =
     alivePlayerUnits.filter((u) => u.slot.column === 1).length !== 0;
 
   if (source.action.type === 'attack-action') {
     if (source.action.range === 'closest') {
       if (!aliveEnemyUnits.length) {
-        return { slots: [], team: getOpossiteTeam(source.team) };
+        return { slots: [], team: getOppositeTeam(source) };
       }
       if (source.slot.column === 0 && thereArePlayerUnitsInFirstColumn) {
-        return { slots: [], team: getOpossiteTeam(source.team) };
+        return { slots: [], team: getOppositeTeam(source) };
       }
       const columnToAttack =
         aliveEnemyUnits.filter((u) => u.slot.column === 1).length !== 0 ? 1 : 0;
@@ -115,33 +112,33 @@ const getPlayerUnitsInAttackRange = (
         source.slot.row === 0 ? [0, 1] : source.slot.row === 1 ? [0, 1, 2] : [1, 2];
       return {
         slots: rowsToAttack.map((row) => {
-          return getLayout(source.team, 3, 2)
+          return getLayout(source.slot.name, 3, 2)
             .filter((s) => s.column === columnToAttack && s.row === row)
             .map((s) => s)[0];
         }),
-        team: getOpossiteTeam(source.team),
+        team: getOppositeTeam(source),
       };
     } else if (source.action.range === 'any') {
       if (source.action.targetTeam === 'player') {
-        return { slots: alivePlayerUnits.map((p) => p.slot), team: getOpossiteTeam(source.team) };
+        return { slots: alivePlayerUnits.map((p) => p.slot), team: getOppositeTeam(source) };
       } else {
-        return { slots: aliveEnemyUnits.map((e) => e.slot), team: getOpossiteTeam(source.team) };
+        return { slots: aliveEnemyUnits.map((e) => e.slot), team: getOppositeTeam(source) };
       }
     } else if (source.action.range === 'all') {
-      return { slots: [], team: getOpossiteTeam(source.team) };
+      return { slots: [], team: getOppositeTeam(source) };
     }
-    return { slots: [], team: getOpossiteTeam(source.team) };
+    return { slots: [], team: getOppositeTeam(source) };
   }
   if (source.action.type === 'heal-action') {
     if (source.action.range === 'any') {
       if (source.action.targetTeam === 'player') {
-        return { slots: alivePlayerUnits.map((p) => p.slot), team: source.team };
+        return { slots: alivePlayerUnits.map((p) => p.slot), team: getTeam(source) };
       }
     } else {
-      return { slots: [], team: source.team };
+      return { slots: [], team: source.slot.name };
     }
   }
-  return { slots: [], team: source.team };
+  return { slots: [], team: source.slot.name };
 };
 
 const getTeamConfig: (
@@ -177,19 +174,20 @@ export const BattleStageComponent: React.FC<Props> = () => {
   const upcomingTurnUnitIds = useSelector<RootState, string[]>(
     (state) => state.game.upcomingTurnUnitIds
   );
-  const unitsInAttackingRange: { slots: SlotPointer[]; team: 'player' | 'enemy' } =
+  const unitsInAttackingRange: { slots: SlotPointer[]; team: string } =
     currentTurnUnitId !== ''
       ? getPlayerUnitsInAttackRange(units, currentTurnUnitId)
       : { slots: [], team: 'player' };
   const slotToUnit: {
-    player: { [key: string]: Unit };
-    enemy: { [key: string]: Unit };
+    [key: string]: { [key: string]: Unit };
   } = Object.values(units).reduce(
     (acc, unit) => {
-      acc[unit.team][unit.slot.id] = unit;
+      if (isPlayer(unit) || isEnemy(unit)) {
+        acc[unit.slot.name][unit.slot.id] = unit;
+      }
       return acc;
     },
-    { player: {} as any, enemy: {} as any }
+    { player: {}, enemy: {} } as any
   );
 
   const dispatch = useDispatch();
@@ -197,7 +195,7 @@ export const BattleStageComponent: React.FC<Props> = () => {
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
   useEffect(() => {
-    if (units[currentTurnUnitId] && units[currentTurnUnitId].team === 'enemy') {
+    if (units[currentTurnUnitId] && units[currentTurnUnitId].slot.name === 'enemy') {
       setTimeout(() => {
         const targets = getPlayerUnitsInAttackRange(units, currentTurnUnitId);
         if (!targets.slots.length) {
@@ -253,7 +251,7 @@ export const BattleStageComponent: React.FC<Props> = () => {
     setMouseOverUnitId(undefined);
   };
   const unitClick = (unitId: string) => () => {
-    if (units[currentTurnUnitId].team === 'enemy' || unitIsDead(units[currentTurnUnitId])) {
+    if (units[currentTurnUnitId].slot.name === 'enemy' || unitIsDead(units[currentTurnUnitId])) {
       return;
     }
     const sourceUnit = units[currentTurnUnitId];
@@ -296,6 +294,75 @@ export const BattleStageComponent: React.FC<Props> = () => {
         );
       }
     );
+  };
+
+  const renderUnitBackground: RenderCallback = ({ x, y, width, height, slot }) => {
+    return (
+      <Container key={slot.id} x={x} y={y}>
+        <Rect width={width} height={height} fillColor={0x00ff00} />
+      </Container>
+    );
+  };
+
+  const renderUnitForeground: (team: string) => RenderCallback = (team: string) => ({
+    x,
+    y,
+    width,
+    height,
+    slot,
+  }) => {
+    const unit = Object.values(units)
+      .filter((u) => u.slot.name === team)
+      .find((u) => u.slot.id === slot.id);
+    return unit ? (
+      <Container
+        key={slot.id}
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        interactive={true}
+        mouseover={onMouseOver(unit.id)}
+        mouseout={onMouseOut}
+        click={unitClick(unit.id)}
+      >
+        <Animable
+          tweenManager={tweenManager}
+          animationTrigger={unit.stats.hp.current + unit.stats.attackCount.current}
+          width={width}
+          height={height}
+          animation={TAKE_DMG_ANIMATION}
+        >
+          <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
+        </Animable>
+        {currentTurnUnitId === unit.id && (
+          <Animable
+            width={width}
+            height={height}
+            lineWidth={6}
+            tweenManager={tweenManager}
+            animation={SELECTED_UNIT_BORDER_ANIMATION}
+          />
+        )}
+        {unitsInAttackingRange.slots.find((s) => s.id === unit.slot.id) &&
+          unit.slot.name === unitsInAttackingRange.team && (
+            <Animable
+              width={width}
+              height={height}
+              lineWidth={6}
+              tweenManager={tweenManager}
+              animation={TARGET_UNIT_BORDER_ANIMATION}
+            />
+          )}
+        <Rect
+          width={width}
+          height={height}
+          lineColor={MOUSE_OVER_LINE_COLOR}
+          lineWidth={3}
+          alpha={mouseOverUnitId === unit.id ? 1 : 0}
+        />
+      </Container>
+    ) : null;
   };
 
   return (
@@ -363,67 +430,9 @@ export const BattleStageComponent: React.FC<Props> = () => {
             columns={2}
             orientation={orientation}
             anchor={anchor}
-          >
-            {({ slot, x, y, width, height }) => {
-              const unit = Object.values(units)
-                .filter((u) => u.team === team)
-                .find((u) => u.slot.id === slot.id);
-              return unit ? (
-                <Container
-                  key={slot.id}
-                  x={x}
-                  y={y}
-                  width={width}
-                  height={height}
-                  interactive={true}
-                  mouseover={onMouseOver(unit.id)}
-                  mouseout={onMouseOut}
-                  click={unitClick(unit.id)}
-                >
-                  <Animable
-                    tweenManager={tweenManager}
-                    animationTrigger={unit.stats.hp.current + unit.stats.attackCount.current}
-                    width={width}
-                    height={height}
-                    animation={TAKE_DMG_ANIMATION}
-                  >
-                    <UnitComponent
-                      width={width}
-                      height={height}
-                      unit={unit}
-                      tweenManager={tweenManager}
-                    />
-                  </Animable>
-                  {currentTurnUnitId === unit.id && (
-                    <Animable
-                      width={width}
-                      height={height}
-                      lineWidth={6}
-                      tweenManager={tweenManager}
-                      animation={SELECTED_UNIT_BORDER_ANIMATION}
-                    />
-                  )}
-                  {unitsInAttackingRange.slots.find((s) => s.id === unit.slot.id) &&
-                    unit.team === unitsInAttackingRange.team && (
-                      <Animable
-                        width={width}
-                        height={height}
-                        lineWidth={6}
-                        tweenManager={tweenManager}
-                        animation={TARGET_UNIT_BORDER_ANIMATION}
-                      />
-                    )}
-                  <Rect
-                    width={width}
-                    height={height}
-                    lineColor={MOUSE_OVER_LINE_COLOR}
-                    lineWidth={3}
-                    alpha={mouseOverUnitId === unit.id ? 1 : 0}
-                  />
-                </Container>
-              ) : null;
-            }}
-          </TeamContainer>
+            renderBackground={renderUnitBackground}
+            renderForeground={renderUnitForeground(team)}
+          />
         );
       })}
       {units[currentTurnUnitId] &&

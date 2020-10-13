@@ -1,16 +1,7 @@
 import * as React from 'react';
-import { Rect } from '../rect';
-import { SlotPointer } from '../types';
 import { getLayout, LEFT_X_TOP_Y_ANCHOR } from '../../utils';
 import { Text } from 'react-pixi-fiber';
-
-export interface ChildrenCallbackData {
-  slot: SlotPointer;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import { RenderCallback } from './types';
 
 interface Props {
   x: number;
@@ -21,7 +12,8 @@ interface Props {
   label: string;
   orientation: 'left' | 'right';
   anchor: PIXI.Point;
-  children: (data: ChildrenCallbackData) => any;
+  renderBackground?: RenderCallback;
+  renderForeground?: RenderCallback;
   slotSize?: number;
   slotSpacer?: number;
 }
@@ -51,7 +43,6 @@ const selectYPosition = (y: number, height: number, slotSpacer: number, row: num
 };
 
 export const TeamContainer: React.FC<Props> = ({
-  children,
   name,
   label,
   x,
@@ -60,6 +51,8 @@ export const TeamContainer: React.FC<Props> = ({
   columns,
   orientation,
   anchor,
+  renderBackground,
+  renderForeground,
   slotSize = SLOT_SIZE,
   slotSpacer = SLOT_SPACER,
 }) => {
@@ -76,31 +69,28 @@ export const TeamContainer: React.FC<Props> = ({
         anchor={LEFT_X_TOP_Y_ANCHOR}
         style={{ fontSize: 18, fontWeight: 'bold' }}
       />
-      {getLayout(name, rows, columns).map(({ id, column, row }) => {
-        return (
-          <Rect
-            key={id}
-            x={selectXPosition(xPos, slotSize, slotSpacer, column, orientation)}
-            y={selectYPosition(yPos, slotSize, slotSpacer, row)}
-            width={slotSize}
-            height={slotSize}
-            fillColor={0x00ff00}
-          />
-        );
-      })}
-      {typeof children === 'function'
-        ? getLayout(name, rows, columns)
-            .map(({ id, row, column }) => {
-              return children({
-                slot: { id, name, row, column },
-                x: selectXPosition(xPos, slotSize, slotSpacer, column, orientation),
-                y: selectYPosition(yPos, slotSize, slotSpacer, row),
-                width: slotSize,
-                height: slotSize,
-              });
-            })
-            .filter((c) => !!c)
-        : null}
+      {renderBackground &&
+        getLayout(name, rows, columns).map(({ id, column, row }) => {
+          return renderBackground({
+            slot: { id, name, row, column },
+            x: selectXPosition(xPos, slotSize, slotSpacer, column, orientation),
+            y: selectYPosition(yPos, slotSize, slotSpacer, row),
+            width: slotSize,
+            height: slotSize,
+          });
+        })}
+      {renderForeground &&
+        getLayout(name, rows, columns)
+          .map(({ id, row, column }) => {
+            return renderForeground({
+              slot: { id, name, row, column },
+              x: selectXPosition(xPos, slotSize, slotSpacer, column, orientation),
+              y: selectYPosition(yPos, slotSize, slotSpacer, row),
+              width: slotSize,
+              height: slotSize,
+            });
+          })
+          .filter((c) => !!c)}
     </>
   );
 };

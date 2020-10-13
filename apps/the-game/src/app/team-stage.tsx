@@ -1,17 +1,16 @@
 import * as React from 'react';
-import * as PIXI from 'pixi.js';
-import { Container, Text } from 'react-pixi-fiber';
+import { Container } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
 import { UnitComponent } from '../components/unit-component';
-import { Rect } from '../components/rect';
-import { TeamContainer } from '../components/team-container/team-container';
+import { RenderCallback, TeamContainer } from '../components/team-container';
 import { AppContext } from './app-context';
 import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
 import { useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
 import { UnitMap } from '../components/types';
-import { useState } from 'react';
-import { BenchMap } from '../features/team-chooser';
+import { DraggableContainer } from '../components/draggable-container';
+import { DroppableContainer } from '../components/droppable-container';
+import { Rect } from '../components/rect';
 
 interface Props {
   onDone: () => void;
@@ -20,20 +19,60 @@ interface Props {
 const TEAM_SLOT_X_OFFSET = 10;
 const BENCH_SLOT_Y_OFFSET = 10;
 
-const MOUSE_OVER_LINE_COLOR = 0xff0000;
+// const MOUSE_OVER_LINE_COLOR = 0xff0000;
 
 export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
-  const { width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
+  const { app, width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
     AppContext
   );
   const viewportCenterY = viewportHeight / 2;
   const viewportCenterX = viewportWidth / 2;
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
-  const bench = useSelector<RootState, BenchMap>((state) => state.teamChooser.unitsOnBench);
-  const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+  // const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
-  const onMouseOver = (unitId: string) => () => {
+  /*const onMouseOver = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
+  };*/
+
+  const renderUnitBackground: RenderCallback = ({ x, y, width, height, slot }) => {
+    return (
+      <Container key={slot.id} x={x} y={y}>
+        <Rect width={width} height={height} fillColor={0x00ff00} />
+        <DroppableContainer
+          width={width}
+          height={height}
+          onDrop={() => {
+            console.log('unit dropped');
+          }}
+        />
+      </Container>
+    );
+  };
+
+  const renderUnitForeground: (team: string) => RenderCallback = (team: string) => ({
+    x,
+    y,
+    width,
+    height,
+    slot,
+  }) => {
+    const unit = Object.values(units)
+      .filter((u) => u.slot.name === team)
+      .find((u) => u.slot.id === slot.id);
+    return unit ? (
+      <Container key={slot.id} x={x} y={y}>
+        <DraggableContainer app={app} width={width} height={height} transferObject={unit}>
+          <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
+          {/*<Rect
+                width={width}
+                height={height}
+                lineColor={MOUSE_OVER_LINE_COLOR}
+                lineWidth={3}
+                alpha={mouseOverUnitId === unit.id ? 1 : 0}
+              />*/}
+        </DraggableContainer>
+      </Container>
+    ) : null;
   };
 
   return (
@@ -47,40 +86,9 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         rows={3}
         orientation={'right'}
         anchor={LEFT_X_CENTER_Y_ANCHOR}
-      >
-        {({ slot, x, y, width, height }) => {
-          const unit = Object.values(units)
-            .filter((u) => u.team === 'player')
-            .find((u) => u.slot.id === slot.id);
-          return unit ? (
-            <Container
-              key={slot.id}
-              x={x}
-              y={y}
-              width={width}
-              height={height}
-              interactive={true}
-              mouseover={onMouseOver(unit.id)}
-              mouseout={() => {}}
-              click={() => {}}
-            >
-              <UnitComponent
-                width={width}
-                height={height}
-                unit={unit}
-                tweenManager={tweenManager}
-              />
-              <Rect
-                width={width}
-                height={height}
-                lineColor={MOUSE_OVER_LINE_COLOR}
-                lineWidth={3}
-                alpha={mouseOverUnitId === unit.id ? 1 : 0}
-              />
-            </Container>
-          ) : null;
-        }}
-      </TeamContainer>
+        renderBackground={renderUnitBackground}
+        renderForeground={renderUnitForeground('player')}
+      />
       <TeamContainer
         x={viewportCenterX}
         y={viewportHeight - BENCH_SLOT_Y_OFFSET}
@@ -90,44 +98,8 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         rows={1}
         orientation={'right'}
         anchor={CENTER_X_BOTTOM_Y_ANCHOR}
-      >
-        {({ slot, x, y, width, height }) => {
-          const unit = Object.values(units)
-            .filter((u) => u.team === 'player')
-            .find((u) => u.slot.id === slot.id);
-          return unit ? (
-            <Container
-              key={slot.id}
-              x={x}
-              y={y}
-              width={width}
-              height={height}
-              interactive={true}
-              mouseover={onMouseOver(unit.id)}
-              mouseout={() => {}}
-              click={() => {}}
-            >
-              <UnitComponent
-                width={width}
-                height={height}
-                unit={unit}
-                tweenManager={tweenManager}
-              />
-              <Rect
-                width={width}
-                height={height}
-                lineColor={MOUSE_OVER_LINE_COLOR}
-                lineWidth={3}
-                alpha={mouseOverUnitId === unit.id ? 1 : 0}
-              />
-            </Container>
-          ) : null;
-        }}
-      </TeamContainer>
-      <Text
-        text={`Slots on bench ${Object.keys(bench).length}`}
-        anchor={new PIXI.Point(0, 0)}
-        style={{ fontSize: 18, fontWeight: 'bold' }}
+        renderBackground={renderUnitBackground}
+        renderForeground={renderUnitForeground('bench')}
       />
       <Button y={100} width={200} height={30} label={'complete stage'} onClick={onDone} />
     </Container>

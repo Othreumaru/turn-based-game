@@ -28,6 +28,7 @@ const StageSwitcherComponent: React.FC<Props> = ({}) => {
           createOrc('enemy', 1, 1),
           createOrc('enemy', 1, 0),
           createGoblin('enemy', 0, 1),
+          createWarrior('bench', 1, 0),
         ])
       );
     }

@@ -9,10 +9,14 @@ interface Props {
   debugColor?: number;
   acceptTags?: string[];
   onDrop: (targetObj: any) => void;
+  onDragEnter?: (targetObj: any) => void;
+  onDragLeave?: (targetObj: any) => void;
 }
 
 export type DroppableContainerInstance = PIXI.Graphics & {
   __onDrop: (transferObj: any) => void;
+  __onDragEnter?: (transferObj: any) => void;
+  __onDragLeave?: (transferObj: any) => void;
   __acceptTags: string[];
 };
 
@@ -25,12 +29,16 @@ const behavior = {
     newProps: Props
   ) {
     instance.__onDrop = newProps.onDrop;
+    instance.__onDragEnter = newProps.onDragEnter;
+    instance.__onDragLeave = newProps.onDragLeave;
     instance.__acceptTags = newProps.acceptTags || [];
     const { width, height } = newProps;
-    instance.clear();
-    instance.beginFill(newProps.debugColor || 0x00ff00);
-    instance.drawRect(0, 0, width, height);
-    instance.endFill();
+    if (newProps.debugColor) {
+      instance.clear();
+      instance.beginFill(newProps.debugColor);
+      instance.drawRect(0, 0, width, height);
+      instance.endFill();
+    }
     (this as any).applyDisplayObjectProps(oldProps, newProps);
   },
 };

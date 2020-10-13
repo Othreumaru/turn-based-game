@@ -8,8 +8,8 @@ interface Props extends React.PropsWithChildren<any> {
   transferObject: any;
   scale?: PIXI.Point;
   tags?: ReadonlyArray<string>;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   onDragStart?: () => void;
   onDragStop?: () => void;
 }
@@ -19,7 +19,7 @@ export type DragContainerInstance = PIXI.Container & {
   __desiredXPos: number;
   __desiredYPos: number;
   __isDragged: boolean;
-  __dragStart: () => void;
+  __dragStart: (event: any) => void;
   __dragEnd: (e: any) => void;
   __dragMove: (e: any) => void;
   __notifyContainerAt: (
@@ -30,6 +30,8 @@ export type DragContainerInstance = PIXI.Container & {
   __onDragStart?: () => void;
   __onDragStop?: () => void;
   _destroyed: boolean;
+  __fromPositionX: number;
+  __fromPositionY: number;
 };
 
 const TYPE = 'DraggableContainer';
@@ -66,19 +68,19 @@ const behavior = {
       });
       return onDropToReturn;
     };
-    return instance;
-  },
-  customDidAttach: (instance: DragContainerInstance) => {
     instance.interactive = true;
     instance.cursor = 'pointer';
     instance.zIndex = 1000;
     instance.__isDragged = false;
 
     let draggedObject: DragContainerInstance | undefined;
-    instance.__dragStart = () => {
+    let draggedOverContainer: DroppableContainerInstance | undefined;
+    instance.__dragStart = (event: any) => {
       draggedObject = instance;
       draggedObject.zIndex = 2000;
       draggedObject.__isDragged = true;
+      draggedObject.__fromPositionX = event.data.global.x;
+      draggedObject.__fromPositionY = event.data.global.y;
       if (draggedObject.__onDragStart) {
         draggedObject.__onDragStart();
       }
@@ -92,6 +94,9 @@ const behavior = {
       }
       const container = instance.__notifyContainerAt(event.data.global);
       if (container) {
+        if (container.__onDragLeave) {
+          container.__onDragLeave(draggedObject.__transferObject);
+        }
         container.__onDrop(draggedObject.__transferObject);
       }
       if (draggedObject.visible && !draggedObject._destroyed) {
@@ -102,22 +107,37 @@ const behavior = {
       }
       draggedObject = undefined;
     };
-    instance.__dragMove = (e: any) => {
+    instance.__dragMove = (event: any) => {
       if (draggedObject === undefined) {
         return;
       }
-      draggedObject.position.x += e.data.originalEvent.movementX;
-      draggedObject.position.y += e.data.originalEvent.movementY;
+
+      draggedObject.position.x += event.data.global.x - draggedObject.__fromPositionX;
+      draggedObject.position.y += event.data.global.y - draggedObject.__fromPositionY;
+      draggedObject.__fromPositionX = event.data.global.x;
+      draggedObject.__fromPositionY = event.data.global.y;
+
+      const container = instance.__notifyContainerAt(event.data.global);
+      if (draggedOverContainer !== container) {
+        if (draggedOverContainer && draggedOverContainer.__onDragLeave) {
+          draggedOverContainer.__onDragLeave(draggedObject.__transferObject);
+        }
+        if (container && container.__onDragEnter) {
+          container.__onDragEnter(draggedObject.__transferObject);
+        }
+        draggedOverContainer = container;
+      }
     };
 
     instance.on('mousedown', instance.__dragStart);
     instance.on('mouseup', instance.__dragEnd);
     instance.on('mousemove', instance.__dragMove);
+    return instance;
   },
   customApplyProps: function (instance: DragContainerInstance, oldProps: Props, newProps: Props) {
     instance.__transferObject = newProps.transferObject;
-    instance.__desiredXPos = newProps.x;
-    instance.__desiredYPos = newProps.y;
+    instance.__desiredXPos = newProps.x || 0;
+    instance.__desiredYPos = newProps.y || 0;
     instance.__onDragStart = newProps.onDragStart;
     instance.__onDragStop = newProps.onDragStop;
 
@@ -125,8 +145,10 @@ const behavior = {
     if (newProps.scale !== undefined) {
       instance.scale = newProps.scale;
     }
-    instance.x = newProps.x;
-    instance.y = newProps.y;
+    if (!instance.__isDragged) {
+      instance.x = newProps.x || 0;
+      instance.y = newProps.y || 0;
+    }
     // (this as any).applyDisplayObjectProps(oldProps, newProps);
   },
   customWillDetach: (instance: DragContainerInstance) => {

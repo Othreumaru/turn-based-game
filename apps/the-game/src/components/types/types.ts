@@ -58,7 +58,6 @@ export type UnitActions = AttackAction | HealAction;
 
 export interface Unit {
   id: string;
-  team: 'player' | 'enemy';
   slot: SlotPointer;
   name: string;
   stats: Stats;

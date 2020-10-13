@@ -5,12 +5,14 @@ import { UnitComponent } from '../components/unit-component';
 import { RenderCallback, TeamContainer } from '../components/team-container';
 import { AppContext } from './app-context';
 import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
-import { UnitMap } from '../components/types';
+import { Unit, UnitMap } from '../components/types';
 import { DraggableContainer } from '../components/draggable-container';
 import { DroppableContainer } from '../components/droppable-container';
 import { Rect } from '../components/rect';
+import { getSlotIdToUnitMap } from '../features/units/selectors';
+import { unitsSlice } from '../features/units';
 
 interface Props {
   onDone: () => void;
@@ -28,6 +30,8 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const viewportCenterY = viewportHeight / 2;
   const viewportCenterX = viewportWidth / 2;
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const slotIdToUnit = useSelector<RootState, any>((state) => getSlotIdToUnitMap(state.game.units));
+  const dispatch = useDispatch();
   // const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
   /*const onMouseOver = (unitId: string) => () => {
@@ -37,14 +41,32 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const renderUnitBackground: RenderCallback = ({ x, y, width, height, slot }) => {
     return (
       <Container key={slot.id} x={x} y={y}>
-        <Rect width={width} height={height} fillColor={0x00ff00} />
         <DroppableContainer
+          acceptTags={['unit']}
           width={width}
           height={height}
-          onDrop={() => {
-            console.log('unit dropped');
+          debugColor={0xff0000}
+          onDrop={(unit: Unit) => {
+            const unitAtLocation: Unit = slotIdToUnit[slot.name][slot.id];
+
+            if (unitAtLocation) {
+              dispatch(
+                unitsSlice.actions.swapUnits({
+                  sourceUnitId: unit.id,
+                  targetUnitId: unitAtLocation.id,
+                })
+              );
+            } else {
+              dispatch(
+                unitsSlice.actions.moveUnitToEmptySlot({
+                  unitId: unit.id,
+                  slot: slot,
+                })
+              );
+            }
           }}
         />
+        <Rect width={width} height={height} fillColor={0x00ff00} />
       </Container>
     );
   };
@@ -61,7 +83,13 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
       .find((u) => u.slot.id === slot.id);
     return unit ? (
       <Container key={slot.id} x={x} y={y}>
-        <DraggableContainer app={app} width={width} height={height} transferObject={unit}>
+        <DraggableContainer
+          app={app}
+          width={width}
+          height={height}
+          transferObject={unit}
+          tags={['unit']}
+        >
           <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
           {/*<Rect
                 width={width}

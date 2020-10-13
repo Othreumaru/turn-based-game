@@ -1,8 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DmgEffect, Game, HealEffect, MissEffect, Unit } from '../../components/types';
 import * as R from 'ramda';
+import { MoveUnitToEmptySlotAction, SwapAction } from './types';
+import { isEnemy, isPlayer } from './selectors';
 
 let initialState: Game = {
+  turnCount: 0,
   units: {},
   upcomingTurnUnitIds: [],
   currentTurnUnitId: '',
@@ -33,6 +36,7 @@ const mutableEndTurn = (state: Game) => {
   state.completedTurnUnitIds = [];
   state.currentTurnUnitId = current;
   state.upcomingTurnUnitIds = rest;
+  state.turnCount += 1;
 };
 
 export const unitsSlice = createSlice({
@@ -41,14 +45,17 @@ export const unitsSlice = createSlice({
   reducers: {
     spawnUnits: (state, action: PayloadAction<Unit[]>) => {
       const units = action.payload;
-      const unitIds = sortUnits([
-        ...state.upcomingTurnUnitIds.map((unitId) => state.units[unitId]),
-        ...units,
-      ]).map((u) => u.id);
 
       units.forEach((unit) => {
         state.units[unit.id] = unit;
       });
+    },
+    startGame: (state, _: PayloadAction<void>) => {
+      const units = Object.values(state.units).filter((u) => isPlayer(u) || isEnemy(u));
+      const unitIds = sortUnits([
+        ...state.upcomingTurnUnitIds.map((unitId) => state.units[unitId]),
+        ...units,
+      ]).map((u) => u.id);
 
       state.upcomingTurnUnitIds = state.currentTurnUnitId === '' ? unitIds.slice(1) : unitIds;
       state.currentTurnUnitId =
@@ -82,6 +89,14 @@ export const unitsSlice = createSlice({
         );
       });
       mutableEndTurn(state);
+    },
+    swapUnits: (state, action: PayloadAction<SwapAction>) => {
+      const sourceSlot = state.units[action.payload.sourceUnitId].slot;
+      state.units[action.payload.sourceUnitId].slot = state.units[action.payload.targetUnitId].slot;
+      state.units[action.payload.targetUnitId].slot = sourceSlot;
+    },
+    moveUnitToEmptySlot: (state, action: PayloadAction<MoveUnitToEmptySlotAction>) => {
+      state.units[action.payload.unitId].slot = action.payload.slot;
     },
   },
 });

@@ -113,6 +113,7 @@ export interface EndTurnEffect {
 export type Effect = SpawnEffect | DmgEffect | HealEffect | MissEffect | EndTurnEffect;
 
 export interface Game {
+  turnCount: number;
   units: UnitMap;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;

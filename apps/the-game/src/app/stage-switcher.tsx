@@ -43,7 +43,13 @@ const StageSwitcherComponent: React.FC<Props> = ({}) => {
           }}
         />
       )}
-      {stage === 'battle-stage' && <BattleStageComponent />}
+      {stage === 'battle-stage' && (
+        <BattleStageComponent
+          onDone={() => {
+            dispatch(stageSwitchSlice.actions.setStage('team-stage'));
+          }}
+        />
+      )}
     </Container>
   );
 };

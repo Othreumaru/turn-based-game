@@ -10,14 +10,16 @@ import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
 import { TweenAnimation } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
-import { unitsSlice } from '../features/units';
+import { getAlivePlayerUnits, unitsSlice } from '../features/units';
 import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getSlotIdToUnitMap, getUnitsInAttackRange } from '../features/units';
 
-interface Props {}
+interface Props {
+  onDone: () => void;
+}
 
 const CURRENT_UNIT_Y_OFFSET = 10;
 const QUEUE_UNIT_SIZE = 80;
@@ -108,7 +110,7 @@ const getTeamConfig: (
   },
 ];
 
-export const BattleStageComponent: React.FC<Props> = () => {
+export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   const { width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
     AppContext
   );
@@ -133,6 +135,12 @@ export const BattleStageComponent: React.FC<Props> = () => {
       dispatch(unitsSlice.actions.startGame());
     }
   }, [dispatch, turnCount]);
+
+  useEffect(() => {
+    if (getAlivePlayerUnits(units).length === 0) {
+      onDone();
+    }
+  }, [units]);
 
   useEffect(() => {
     if (units[currentTurnUnitId] && units[currentTurnUnitId].slot.name === 'enemy') {

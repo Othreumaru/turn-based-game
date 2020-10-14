@@ -5,6 +5,10 @@ export const isEnemy = (unit: Unit) => unit.slot.name === 'enemy';
 export const isBench = (unit: Unit) => unit.slot.name === 'bench';
 export const getTeam = (unit: Unit) => unit.slot.name;
 export const getOppositeTeam = (unit: Unit) => (unit.slot.name === 'player' ? 'enemy' : 'player');
+export const getAliveUnits = (units: UnitMap) =>
+  Object.values(units).filter((u) => u.stats.hp.current > 0);
+export const getAlivePlayerUnits = (units: UnitMap) => getAliveUnits(units).filter(isPlayer);
+export const getAliveEnemyUnits = (units: UnitMap) => getAliveUnits(units).filter(isEnemy);
 export const getSlotIdToUnitMap = (units: UnitMap) =>
   Object.values(units).reduce((acc, unit) => {
     if (!acc[unit.slot.name]) {
@@ -15,9 +19,8 @@ export const getSlotIdToUnitMap = (units: UnitMap) =>
   }, {} as any);
 export const getUnitsInAttackRange = (units: UnitMap, sourceUnitId: string): SlotPointer[] => {
   const source = units[sourceUnitId];
-  const aliveUnits = Object.values(units).filter((u) => u.stats.hp.current > 0);
-  const aliveEnemyUnits = aliveUnits.filter(isEnemy);
-  const alivePlayerUnits = aliveUnits.filter(isPlayer);
+  const aliveEnemyUnits = getAliveEnemyUnits(units);
+  const alivePlayerUnits = getAlivePlayerUnits(units);
   const myTeamUnits = isPlayer(source) ? alivePlayerUnits : aliveEnemyUnits;
   const oppositeTeamUnits = isPlayer(source) ? aliveEnemyUnits : alivePlayerUnits;
   const thereAreUnitsInFirstColumn =

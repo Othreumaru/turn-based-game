@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
-import { SlotPointer, Stat, UnitActions, UnitMap } from '../components/types';
+import { Stat, UnitActions, UnitMap } from '../components/types';
 import { unitIsDead } from './game-logic';
 import { RenderCallback, TeamContainer } from '../components/team-container';
 import { UnitComponent } from '../components/unit-component';
@@ -15,14 +15,7 @@ import { RootState } from './root-reducer';
 import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
-import { getLayout } from '../utils';
-import {
-  getOppositeTeam,
-  getSlotIdToUnitMap,
-  getTeam,
-  isEnemy,
-  isPlayer,
-} from '../features/units/selectors';
+import { getSlotIdToUnitMap, getUnitsInAttackRange } from '../features/units';
 
 interface Props {}
 
@@ -93,58 +86,6 @@ const getHealthDetails = (stat: Stat) => {
   return `${stat.current}/${stat.max}`;
 };
 
-const getPlayerUnitsInAttackRange = (
-  units: UnitMap,
-  sourceUnitId: string
-): { slots: SlotPointer[]; team: string } => {
-  const source = units[sourceUnitId];
-  const aliveUnits = Object.values(units).filter((u) => u.stats.hp.current > 0);
-  const aliveEnemyUnits = aliveUnits.filter(isEnemy);
-  const alivePlayerUnits = aliveUnits.filter(isPlayer);
-  const myTeamUnits = isPlayer(source) ? alivePlayerUnits : aliveEnemyUnits;
-  const oppositeTeamUnits = isPlayer(source) ? aliveEnemyUnits : alivePlayerUnits;
-  const thereAreUnitsInFirstColumn =
-    oppositeTeamUnits.filter((u) => u.slot.column === 1).length !== 0;
-
-  if (source.action.type === 'attack-action') {
-    if (source.action.range === 'closest') {
-      if (!oppositeTeamUnits.length) {
-        return { slots: [], team: getOppositeTeam(source) };
-      }
-      if (source.slot.column === 0 && thereAreUnitsInFirstColumn) {
-        return { slots: [], team: getOppositeTeam(source) };
-      }
-      const columnToAttack =
-        oppositeTeamUnits.filter((u) => u.slot.column === 1).length !== 0 ? 1 : 0;
-      const rowsToAttack =
-        source.slot.row === 0 ? [0, 1] : source.slot.row === 1 ? [0, 1, 2] : [1, 2];
-      return {
-        slots: rowsToAttack.map((row) => {
-          return getLayout(source.slot.name, 3, 2)
-            .filter((s) => s.column === columnToAttack && s.row === row)
-            .map((s) => s)[0];
-        }),
-        team: getOppositeTeam(source),
-      };
-    } else if (source.action.range === 'any') {
-      return { slots: oppositeTeamUnits.map((p) => p.slot), team: getOppositeTeam(source) };
-    } else if (source.action.range === 'all') {
-      return { slots: [], team: getOppositeTeam(source) };
-    }
-    return { slots: [], team: getOppositeTeam(source) };
-  }
-  if (source.action.type === 'heal-action') {
-    if (source.action.range === 'any') {
-      if (source.action.targetTeam === 'player') {
-        return { slots: myTeamUnits.map((p) => p.slot), team: getTeam(source) };
-      }
-    } else {
-      return { slots: [], team: source.slot.name };
-    }
-  }
-  return { slots: [], team: source.slot.name };
-};
-
 const getTeamConfig: (
   viewportWidth: number
 ) => {
@@ -179,10 +120,8 @@ export const BattleStageComponent: React.FC<Props> = () => {
   const upcomingTurnUnitIds = useSelector<RootState, string[]>(
     (state) => state.game.upcomingTurnUnitIds
   );
-  const unitsInAttackingRange: { slots: SlotPointer[]; team: string } =
-    currentTurnUnitId !== ''
-      ? getPlayerUnitsInAttackRange(units, currentTurnUnitId)
-      : { slots: [], team: 'player' };
+  const unitsInAttackingRange =
+    currentTurnUnitId !== '' ? getUnitsInAttackRange(units, currentTurnUnitId) : [];
   const slotIdToUnit = getSlotIdToUnitMap(units);
 
   const dispatch = useDispatch();
@@ -198,8 +137,8 @@ export const BattleStageComponent: React.FC<Props> = () => {
   useEffect(() => {
     if (units[currentTurnUnitId] && units[currentTurnUnitId].slot.name === 'enemy') {
       setTimeout(() => {
-        const targets = getPlayerUnitsInAttackRange(units, currentTurnUnitId);
-        if (!targets.slots.length) {
+        const targets = getUnitsInAttackRange(units, currentTurnUnitId);
+        if (!targets.length) {
           return;
         }
         performUnitAction(
@@ -210,7 +149,7 @@ export const BattleStageComponent: React.FC<Props> = () => {
                 sourceUnitId: units[currentTurnUnitId].id,
                 targets: [
                   {
-                    unitId: slotIdToUnit[targets.team][targets.slots[0].id].id,
+                    unitId: slotIdToUnit[targets[0].name][targets[0].id].id,
                     dmgAmount,
                     isCrit,
                   },
@@ -236,7 +175,7 @@ export const BattleStageComponent: React.FC<Props> = () => {
             dispatch(
               unitsSlice.actions.missUnit({
                 sourceUnitId: units[currentTurnUnitId].id,
-                targetUnitIds: [slotIdToUnit[targets.team][targets.slots[0].id].id],
+                targetUnitIds: [slotIdToUnit[targets[0].name][targets[0].id].id],
               })
             );
           }
@@ -345,8 +284,8 @@ export const BattleStageComponent: React.FC<Props> = () => {
             animation={SELECTED_UNIT_BORDER_ANIMATION}
           />
         )}
-        {unitsInAttackingRange.slots.find((s) => s.id === unit.slot.id) &&
-          unit.slot.name === unitsInAttackingRange.team && (
+        {unitsInAttackingRange.find((s) => s.id === unit.slot.id) &&
+          unit.slot.name === unitsInAttackingRange[0].name && (
             <Animable
               width={width}
               height={height}

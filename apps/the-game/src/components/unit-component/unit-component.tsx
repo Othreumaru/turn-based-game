@@ -46,7 +46,13 @@ const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit, tweenMa
         <Rect y={height * 0.8} width={width} height={height * 0.2} fillColor={0xffffff} />
         <Rect {...hpBar} fillColor={0xff0000} />
 
-        <Text text={name} style={{ fontSize: 16, fontWeight: 'bold' }} />
+        <Text
+          x={width / 2}
+          y={height * 0.1}
+          text={name}
+          style={{ fontSize: 13, fontWeight: 'bold', fill: 0xffffff }}
+          anchor={CENTER_X_CENTER_Y_ANCHOR}
+        />
         <Text
           x={width * 0.5}
           y={height * 0.8}

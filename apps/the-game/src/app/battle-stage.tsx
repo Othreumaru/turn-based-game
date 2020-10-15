@@ -22,7 +22,7 @@ interface Props {
 }
 
 const CURRENT_UNIT_Y_OFFSET = 10;
-const QUEUE_UNIT_SIZE = 80;
+const QUEUE_UNIT_SIZE = 100;
 const QUEUE_UNIT_OFFSET = 10;
 
 const TEAM_SLOT_X_OFFSET = 10;
@@ -411,7 +411,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         ].map((text, index) => (
           <Text
             key={`${index}`}
-            x={200}
+            x={220}
             y={20 + index * 30}
             text={text}
             anchor={new PIXI.Point(0, 0)}

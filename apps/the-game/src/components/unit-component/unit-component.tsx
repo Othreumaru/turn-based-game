@@ -2,11 +2,10 @@ import * as React from 'react';
 import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
 import { Rect } from '../rect';
-import { Unit } from '../types';
-import { unitIsDead } from '../../app/game-logic';
 import { CENTER_X_CENTER_Y_ANCHOR } from '../../utils';
 import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
+import { Unit, unitIsDead } from '../../features/units';
 
 interface Props {
   x?: number;

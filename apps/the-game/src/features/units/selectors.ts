@@ -1,5 +1,7 @@
-import { SlotPointer, Unit, UnitMap } from '../../components/types';
+import { SlotPointer, Unit, UnitMap } from './types';
 
+export const unitIsAlive = (unit: Unit) => unit.stats.hp.current > 0;
+export const unitIsDead = (unit: Unit) => !unitIsAlive(unit);
 export const isPlayer = (unit: Unit) => unit.slot.name === 'player';
 export const isEnemy = (unit: Unit) => unit.slot.name === 'enemy';
 export const isBench = (unit: Unit) => unit.slot.name === 'bench';

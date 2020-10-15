@@ -2,20 +2,26 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
-import { SlotPointer, Stat, UnitActions, UnitMap } from '../components/types';
-import { unitIsDead } from './game-logic';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
 import { TweenAnimation } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAlivePlayerUnits, unitsSlice } from '../features/units';
+import {
+  getAlivePlayerUnits,
+  getLayoutProjection,
+  performUnitAction,
+  SlotPointer,
+  Stat,
+  UnitActions,
+  unitIsDead,
+  UnitMap,
+  unitsSlice,
+} from '../features/units';
 import { RootState } from './root-reducer';
-import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getSlotIdToUnitMap, getUnitsInAttackRange } from '../features/units';
-import { getLayoutProjection } from '../utils/utils';
 import { LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
 
 interface Props {

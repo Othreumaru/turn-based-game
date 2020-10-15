@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DmgEffect, Game, HealEffect, MissEffect, Unit } from '../../components/types';
+import { DmgEffect, Game, HealEffect, MissEffect, Unit } from './types';
 import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
 import { isEnemy, isPlayer } from './selectors';

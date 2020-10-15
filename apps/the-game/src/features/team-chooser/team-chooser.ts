@@ -1,7 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { TeamChooser } from './team-chooser-types';
 
-let initialState: TeamChooser = {
+let initialState: any = {
   unitsOnBench: {},
 };
 

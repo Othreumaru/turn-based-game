@@ -5,10 +5,9 @@ import { RootState } from './root-reducer';
 import { Stages, stageSwitchSlice } from '../features/stage-switch';
 import { TeamStageComponent } from './team-stage';
 import { BattleStageComponent } from './battle-stage';
-import { unitsSlice } from '../features/units';
-import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
+import { UnitMap, unitsSlice } from '../features/units';
+import { createGoblin, createHealer, createOrc, createWarrior } from '../features/units';
 import { useEffect } from 'react';
-import { UnitMap } from '../components/types';
 import { getRandomName } from '../utils/utils';
 
 interface Props {}

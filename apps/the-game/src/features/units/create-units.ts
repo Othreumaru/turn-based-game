@@ -1,6 +1,6 @@
-import { Unit } from '../components/types';
 import { v4 as uuidv4 } from 'uuid';
-import { toSlotId } from '../utils';
+import { toSlotId } from './utils';
+import { Unit } from './types';
 
 export const createWarrior = (name: string, team: string, column: number, row: number): Unit => {
   return {

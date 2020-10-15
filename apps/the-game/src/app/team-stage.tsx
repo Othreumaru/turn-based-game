@@ -6,13 +6,18 @@ import { AppContext } from './app-context';
 import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
-import { SlotPointer, Unit, UnitMap } from '../components/types';
 import { DraggableContainer } from '../components/draggable-container';
 import { DroppableContainer } from '../components/droppable-container';
 import { Rect } from '../components/rect';
-import { getSlotIdToUnitMap } from '../features/units';
+import {
+  getLayoutProjection,
+  getSlotIdToUnitMap,
+  SlotPointer,
+  slotToKey,
+  Unit,
+  UnitMap,
+} from '../features/units';
 import { unitsSlice } from '../features/units';
-import { getLayoutProjection, slotToKey } from '../utils/utils';
 
 interface Props {
   onDone: () => void;

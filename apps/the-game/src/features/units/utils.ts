@@ -52,7 +52,7 @@ export const getLayoutProjection = (props: GetPixelLayoutProps): ProjectedSlotPo
   const offsetY = anchor.y * (rows * segmentWith);
 
   return getLayout(name, rows, columns).map(({ id, column, row }) => {
-    const columnOffset = mirrorX ? columns - column : column;
+    const columnOffset = mirrorX ? columns - column - 1 : column;
 
     return {
       slot: { id, name, row, column },

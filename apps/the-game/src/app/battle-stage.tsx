@@ -115,6 +115,7 @@ const enemyProjection = getLayoutProjection({
   columns: 2,
   rows: 3,
   anchor: RIGHT_X_CENTER_Y_ANCHOR,
+  mirrorX: true,
 });
 
 export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {

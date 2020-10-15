@@ -2,9 +2,8 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Container, Text } from 'react-pixi-fiber';
 import * as PIXI from 'pixi.js';
-import { Stat, UnitActions, UnitMap } from '../components/types';
+import { SlotPointer, Stat, UnitActions, UnitMap } from '../components/types';
 import { unitIsDead } from './game-logic';
-import { RenderCallback, TeamContainer } from '../components/team-container';
 import { UnitComponent } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
@@ -16,18 +15,28 @@ import { performUnitAction } from './game-actions';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getSlotIdToUnitMap, getUnitsInAttackRange } from '../features/units';
+import { getLayoutProjection } from '../utils/utils';
+import { LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
 
 interface Props {
   onDone: () => void;
 }
+
+interface RenderData {
+  slot: SlotPointer;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+type RenderCallback = (data: RenderData) => any;
 
 const CURRENT_UNIT_Y_OFFSET = 10;
 const QUEUE_UNIT_SIZE = 100;
 const QUEUE_UNIT_OFFSET = 10;
 
 const TEAM_SLOT_X_OFFSET = 10;
-const PLAYER_TEAM_ANCHOR = new PIXI.Point(0, 0.5);
-const ENEMY_TEAM_ANCHOR = new PIXI.Point(1, 0.5);
 const MOUSE_OVER_LINE_COLOR = 0xff0000;
 
 const SELECTED_UNIT_BORDER_ANIMATION: TweenAnimation = {
@@ -88,27 +97,19 @@ const getHealthDetails = (stat: Stat) => {
   return `${stat.current}/${stat.max}`;
 };
 
-const getTeamConfig: (
-  viewportWidth: number
-) => {
-  team: 'enemy' | 'player';
-  x: number;
-  orientation: 'left' | 'right';
-  anchor: PIXI.Point;
-}[] = (viewportWidth) => [
-  {
-    team: 'player',
-    x: TEAM_SLOT_X_OFFSET,
-    orientation: 'right',
-    anchor: PLAYER_TEAM_ANCHOR,
-  },
-  {
-    team: 'enemy',
-    x: viewportWidth - TEAM_SLOT_X_OFFSET,
-    orientation: 'left',
-    anchor: ENEMY_TEAM_ANCHOR,
-  },
-];
+const playerProjection = getLayoutProjection({
+  name: 'player',
+  columns: 2,
+  rows: 3,
+  anchor: LEFT_X_CENTER_Y_ANCHOR,
+});
+
+const enemyProjection = getLayoutProjection({
+  name: 'enemy',
+  columns: 2,
+  rows: 3,
+  anchor: RIGHT_X_CENTER_Y_ANCHOR,
+});
 
 export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   const { width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
@@ -244,7 +245,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
     );
   };
 
-  const renderUnitBackground: RenderCallback = ({ x, y, width, height, slot }) => {
+  const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
     return (
       <Container key={slot.id} x={x} y={y}>
         <Rect width={width} height={height} fillColor={0x00ff00} />
@@ -252,7 +253,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
     );
   };
 
-  const renderUnitForeground: (team: string) => RenderCallback = (team: string) => ({
+  const renderUnit: (team: string) => RenderCallback = (team: string) => ({
     x,
     y,
     width,
@@ -366,23 +367,38 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
             />
           </Container>
         ))}
-      {getTeamConfig(viewportWidth).map(({ x, orientation, team, anchor }) => {
-        return (
-          <TeamContainer
-            key={team}
-            x={x}
-            y={viewportCenterY}
-            name={team}
-            label={'Enemy Team'}
-            rows={3}
-            columns={2}
-            orientation={orientation}
-            anchor={anchor}
-            renderBackground={renderUnitBackground}
-            renderForeground={renderUnitForeground(team)}
-          />
-        );
-      })}
+      <Container>
+        {playerProjection.map(({ x, y, ...rest }) =>
+          renderSlot({
+            x: x + TEAM_SLOT_X_OFFSET,
+            y: y + viewportCenterY,
+            ...rest,
+          })
+        )}
+        {enemyProjection.map(({ x, y, ...rest }) =>
+          renderSlot({
+            x: x + viewportWidth - TEAM_SLOT_X_OFFSET,
+            y: y + viewportCenterY,
+            ...rest,
+          })
+        )}
+      </Container>
+      <Container>
+        {playerProjection.map(({ x, y, ...rest }) =>
+          renderUnit('player')({
+            x: x + TEAM_SLOT_X_OFFSET,
+            y: y + viewportCenterY,
+            ...rest,
+          })
+        )}
+        {enemyProjection.map(({ x, y, ...rest }) =>
+          renderUnit('enemy')({
+            x: x + viewportWidth - TEAM_SLOT_X_OFFSET,
+            y: y + viewportCenterY,
+            ...rest,
+          })
+        )}
+      </Container>
       {units[currentTurnUnitId] &&
         [
           'Name: ' + units[currentTurnUnitId].name,

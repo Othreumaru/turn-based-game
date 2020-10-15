@@ -2,12 +2,11 @@ import * as React from 'react';
 import { Container } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
 import { UnitComponent } from '../components/unit-component';
-import { RenderCallback } from '../components/team-container';
 import { AppContext } from './app-context';
 import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
-import { Unit, UnitMap } from '../components/types';
+import { SlotPointer, Unit, UnitMap } from '../components/types';
 import { DraggableContainer } from '../components/draggable-container';
 import { DroppableContainer } from '../components/droppable-container';
 import { Rect } from '../components/rect';
@@ -18,6 +17,16 @@ import { getLayoutProjection, slotToKey } from '../utils/utils';
 interface Props {
   onDone: () => void;
 }
+
+interface RenderData {
+  slot: SlotPointer;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+type RenderCallback = (data: RenderData) => any;
 
 const TEAM_SLOT_X_OFFSET = 10;
 const BENCH_SLOT_Y_OFFSET = 10;
@@ -53,7 +62,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
     setMouseOverUnitId(unitId);
   };*/
 
-  const renderSlotBackground: RenderCallback = ({ x, y, width, height, slot }) => {
+  const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
     return (
       <DroppableContainer
         key={slotToKey('slots', slot)}
@@ -88,7 +97,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
     );
   };
 
-  const renderUnits: (team: string) => RenderCallback = (team: string) => ({
+  const renderUnit: (team: string) => RenderCallback = (team: string) => ({
     x,
     y,
     width,
@@ -125,7 +134,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
     <Container>
       <Container>
         {playerProjection.map(({ x, y, width, height, slot }) =>
-          renderSlotBackground({
+          renderSlot({
             slot,
             x: x + TEAM_SLOT_X_OFFSET,
             y: y + viewportCenterY,
@@ -134,7 +143,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
           })
         )}
         {benchProjection.map(({ x, y, width, height, slot }) =>
-          renderSlotBackground({
+          renderSlot({
             slot,
             x: x + viewportCenterX,
             y: y + viewportHeight - BENCH_SLOT_Y_OFFSET,
@@ -146,7 +155,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
       <Container sortableChildren={true}>
         {playerProjection
           .map(({ x, y, width, height, slot }) =>
-            renderUnits('player')({
+            renderUnit('player')({
               slot,
               x: x + TEAM_SLOT_X_OFFSET,
               y: y + viewportCenterY,
@@ -157,7 +166,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
           .filter((u) => !!u)}
         {benchProjection
           .map(({ x, y, width, height, slot }) =>
-            renderUnits('bench')({
+            renderUnit('bench')({
               slot,
               x: x + viewportCenterX,
               y: y + viewportHeight - BENCH_SLOT_Y_OFFSET,

@@ -9,6 +9,7 @@ import { unitsSlice } from '../features/units';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 import { useEffect } from 'react';
 import { UnitMap } from '../components/types';
+import { getRandomName } from '../utils/utils';
 
 interface Props {}
 
@@ -21,14 +22,14 @@ const StageSwitcherComponent: React.FC<Props> = ({}) => {
     if (!Object.keys(units).length) {
       dispatch(
         unitsSlice.actions.spawnUnits([
-          createWarrior('player', 1, 0),
-          createWarrior('player', 1, 1),
-          createWarrior('player', 1, 2),
-          createHealer('player', 0, 1),
-          createOrc('enemy', 1, 1),
-          createOrc('enemy', 1, 0),
-          createGoblin('enemy', 0, 1),
-          createWarrior('bench', 1, 0),
+          createWarrior(`${getRandomName()}, melee`, 'player', 1, 0),
+          createWarrior(`${getRandomName()}, melee`, 'player', 1, 1),
+          createWarrior(`${getRandomName()}, melee`, 'player', 1, 2),
+          createHealer(`${getRandomName()}, heal`, 'player', 0, 1),
+          createOrc('Orc1', 'enemy', 1, 1),
+          createOrc('Orc2', 'enemy', 1, 0),
+          createGoblin('Goblin', 'enemy', 0, 1),
+          createWarrior(`${getRandomName()}, melee`, 'bench', 1, 0),
         ])
       );
     }

@@ -2,11 +2,11 @@ import { Unit } from '../components/types';
 import { v4 as uuidv4 } from 'uuid';
 import { toSlotId } from '../utils';
 
-export const createWarrior = (name: string, column: number, row: number): Unit => {
+export const createWarrior = (name: string, team: string, column: number, row: number): Unit => {
   return {
     id: uuidv4(),
-    name: 'warrior',
-    slot: { id: toSlotId(column, row), name, row, column },
+    name: name,
+    slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
       hp: { current: 120, max: 120 },
       level: { current: 1, max: 60 },
@@ -29,11 +29,11 @@ export const createWarrior = (name: string, column: number, row: number): Unit =
   };
 };
 
-export const createHealer = (name: string, column: number, row: number): Unit => {
+export const createHealer = (name: string, team: string, column: number, row: number): Unit => {
   return {
     id: uuidv4(),
-    name: 'healer',
-    slot: { id: toSlotId(column, row), name, row, column },
+    name: name,
+    slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
       hp: { current: 120, max: 120 },
       level: { current: 1, max: 60 },
@@ -56,11 +56,11 @@ export const createHealer = (name: string, column: number, row: number): Unit =>
   };
 };
 
-export const createOrc = (name: string, column: number, row: number): Unit => {
+export const createOrc = (name: string, team: string, column: number, row: number): Unit => {
   return {
     id: uuidv4(),
-    name: 'orc',
-    slot: { id: toSlotId(column, row), name, row, column },
+    name: name,
+    slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
       hp: { current: 120, max: 120 },
       level: { current: 1, max: 60 },
@@ -83,11 +83,11 @@ export const createOrc = (name: string, column: number, row: number): Unit => {
   };
 };
 
-export const createGoblin = (name: string, column: number, row: number): Unit => {
+export const createGoblin = (name: string, team: string, column: number, row: number): Unit => {
   return {
     id: uuidv4(),
-    name: 'goblin',
-    slot: { id: toSlotId(column, row), name, row, column },
+    name: name,
+    slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
       hp: { current: 120, max: 120 },
       level: { current: 1, max: 60 },

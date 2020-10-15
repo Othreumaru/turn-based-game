@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Container, Text } from 'react-pixi-fiber';
-import * as PIXI from 'pixi.js';
-import { UnitComponent } from '../components/unit-component';
+import { Container } from 'react-pixi-fiber';
+import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
 import { TweenAnimation } from '@zalgoforge/the-tween';
@@ -12,8 +11,6 @@ import {
   getLayoutProjection,
   performUnitAction,
   SlotPointer,
-  Stat,
-  UnitActions,
   unitIsDead,
   UnitMap,
   unitsSlice,
@@ -85,22 +82,6 @@ const TAKE_DMG_ANIMATION: TweenAnimation = {
       x: 40,
     },
   },
-};
-
-const getAttackDetails = (action: UnitActions) => {
-  if (action.type === 'attack-action') {
-    return `${action.minDmg} - ${action.maxDmg}`;
-  } else {
-    return `${action.minHeal} - ${action.maxHeal}`;
-  }
-};
-
-const getChanceDetails = (stat: Stat) => {
-  return `${stat.current * 100}%`;
-};
-
-const getHealthDetails = (stat: Stat) => {
-  return `${stat.current}/${stat.max}`;
 };
 
 const playerProjection = getLayoutProjection({
@@ -406,41 +387,10 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
           })
         )}
       </Container>
-      {units[currentTurnUnitId] &&
-        [
-          'Name: ' + units[currentTurnUnitId].name,
-          'Health: ' + getHealthDetails(units[currentTurnUnitId].stats.hp),
-          'Attack: ' + getAttackDetails(units[currentTurnUnitId].action),
-          'Hit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.hitChance),
-          'Crit Chance: ' + getChanceDetails(units[currentTurnUnitId].stats.critChance),
-        ].map((text, index) => (
-          <Text
-            key={`${index}`}
-            x={30}
-            y={20 + index * 30}
-            text={text}
-            anchor={new PIXI.Point(0, 0)}
-            style={{ fontSize: 18, fontWeight: 'bold' }}
-          />
-        ))}
-      {mouseOverUnitId &&
-        units[mouseOverUnitId] &&
-        [
-          'Name: ' + units[mouseOverUnitId].name,
-          'Health: ' + getHealthDetails(units[mouseOverUnitId].stats.hp),
-          'Attack: ' + getAttackDetails(units[mouseOverUnitId].action),
-          'Hit Chance: ' + getChanceDetails(units[mouseOverUnitId].stats.hitChance),
-          'Crit Chance: ' + getChanceDetails(units[mouseOverUnitId].stats.critChance),
-        ].map((text, index) => (
-          <Text
-            key={`${index}`}
-            x={220}
-            y={20 + index * 30}
-            text={text}
-            anchor={new PIXI.Point(0, 0)}
-            style={{ fontSize: 18, fontWeight: 'bold' }}
-          />
-        ))}
+      {units[currentTurnUnitId] && <UnitDetails x={30} y={20} unit={units[currentTurnUnitId]} />}
+      {mouseOverUnitId && units[mouseOverUnitId] && (
+        <UnitDetails x={230} y={20} unit={units[mouseOverUnitId]} />
+      )}
       <Button
         x={800}
         y={900}

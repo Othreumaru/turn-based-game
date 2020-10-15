@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Container } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
-import { UnitComponent } from '../components/unit-component';
+import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { AppContext } from './app-context';
 import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,6 +18,7 @@ import {
   UnitMap,
 } from '../features/units';
 import { unitsSlice } from '../features/units';
+import { useState } from 'react';
 
 interface Props {
   onDone: () => void;
@@ -36,7 +37,7 @@ type RenderCallback = (data: RenderData) => any;
 const TEAM_SLOT_X_OFFSET = 10;
 const BENCH_SLOT_Y_OFFSET = 10;
 
-// const MOUSE_OVER_LINE_COLOR = 0xff0000;
+const MOUSE_OVER_LINE_COLOR = 0xff0000;
 
 const playerProjection = getLayoutProjection({
   name: 'player',
@@ -61,11 +62,11 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
   const slotIdToUnit = useSelector<RootState, any>((state) => getSlotIdToUnitMap(state.game.units));
   const dispatch = useDispatch();
-  // const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+  const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
-  /*const onMouseOver = (unitId: string) => () => {
+  const onMouseOver = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
-  };*/
+  };
 
   const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
     return (
@@ -124,14 +125,16 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         zIndex={100}
         tags={['unit']}
       >
-        <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
-        {/*<Rect
-                width={width}
-                height={height}
-                lineColor={MOUSE_OVER_LINE_COLOR}
-                lineWidth={3}
-                alpha={mouseOverUnitId === unit.id ? 1 : 0}
-              />*/}
+        <Container interactive={true} mouseover={onMouseOver(unit.id)}>
+          <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
+          <Rect
+            width={width}
+            height={height}
+            lineColor={MOUSE_OVER_LINE_COLOR}
+            lineWidth={3}
+            alpha={mouseOverUnitId === unit.id ? 1 : 0.1}
+          />
+        </Container>
       </DraggableContainer>
     ) : null;
   };
@@ -181,7 +184,10 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
           )
           .filter((u) => !!u)}
       </Container>
-      <Button y={100} width={200} height={30} label={'complete stage'} onClick={onDone} />
+      {mouseOverUnitId && units[mouseOverUnitId] && (
+        <UnitDetails x={30} y={20} unit={units[mouseOverUnitId]} />
+      )}
+      <Button x={10} y={1000} width={200} height={30} label={'complete stage'} onClick={onDone} />
     </Container>
   );
 };

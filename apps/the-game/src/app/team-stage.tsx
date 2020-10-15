@@ -78,7 +78,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         height={height}
         debugColor={0xff0000}
         onDrop={(unit: Unit) => {
-          const unitAtLocation: Unit = slotIdToUnit[slot.name][slot.id];
+          const unitAtLocation: Unit | undefined = slotIdToUnit[slot.name]?.[slot.id];
 
           if (unitAtLocation) {
             dispatch(

@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
-import { Container } from 'react-pixi-fiber';
+import { useEffect, useRef, useState } from 'react';
+import { Container, Text } from 'react-pixi-fiber';
 import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
 import { TweenAnimation } from '@zalgoforge/the-tween';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  ActionResult,
   getAlivePlayerUnits,
   getLayoutProjection,
   performUnitAction,
@@ -18,7 +19,7 @@ import {
 import { RootState } from './root-reducer';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
-import { getSlotIdToUnitMap, getUnitsInAttackRange } from '../features/units';
+import { getUnitsInAttackRange } from '../features/units';
 import { LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
 
 interface Props {
@@ -99,10 +100,70 @@ const enemyProjection = getLayoutProjection({
   mirrorX: true,
 });
 
+const executeAction = (
+  dispatch: any,
+  actionResult: ActionResult,
+  sourceId: string,
+  targetIds: string[]
+) => {
+  switch (actionResult.type) {
+    case 'buff-action-result': {
+      dispatch(
+        unitsSlice.actions.buffUnit({
+          sourceUnitId: sourceId,
+          buffs: actionResult.buffs,
+        })
+      );
+      break;
+    }
+    case 'attack-action-result': {
+      dispatch(
+        unitsSlice.actions.dmgUnit({
+          sourceUnitId: sourceId,
+          targets: targetIds.map((targetId) => ({
+            unitId: targetId,
+            dmgAmount: actionResult.dmgAmount,
+            isCrit: actionResult.isCrit,
+          })),
+        })
+      );
+      break;
+    }
+    case 'heal-action-result': {
+      dispatch(
+        unitsSlice.actions.healUnit({
+          sourceUnitId: sourceId,
+          targets: [
+            {
+              unitId: sourceId,
+              healAmount: actionResult.healAmount,
+              isCrit: actionResult.isCrit,
+            },
+          ],
+        })
+      );
+      break;
+    }
+    case 'miss-action-result': {
+      dispatch(
+        unitsSlice.actions.missUnit({
+          sourceUnitId: sourceId,
+          targetUnitIds: targetIds,
+        })
+      );
+    }
+  }
+};
+
 export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   const { width: viewportWidth, height: viewportHeight, tweenManager } = React.useContext(
     AppContext
   );
+  const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+  const [mouseOverActionId, setMouseOverActionId] = useState<string>();
+  const [selectedActionId, setSelectedActionId] = useState<string>();
+  const prevTurnUnitId = useRef<string>();
+
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
   const turnCount = useSelector<RootState, number>((state) => state.game.turnCount);
@@ -112,12 +173,21 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
     (state) => state.game.upcomingTurnUnitIds
   );
   const unitsInAttackingRange =
-    currentTurnUnitId !== '' ? getUnitsInAttackRange(units, currentTurnUnitId) : [];
-  const slotIdToUnit = getSlotIdToUnitMap(units);
+    currentTurnUnitId !== '' && selectedActionId
+      ? getUnitsInAttackRange(units, currentTurnUnitId, selectedActionId)
+      : [];
 
   const dispatch = useDispatch();
 
-  const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
+  useEffect(() => {
+    if (currentTurnUnitId !== prevTurnUnitId.current && units[currentTurnUnitId]) {
+      setSelectedActionId(Object.values(units[currentTurnUnitId].actions)[0].id);
+    }
+  }, [units, currentTurnUnitId]);
+
+  useEffect(() => {
+    prevTurnUnitId.current = currentTurnUnitId;
+  });
 
   useEffect(() => {
     if (turnCount === 0) {
@@ -132,105 +202,58 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   }, [units]);
 
   useEffect(() => {
-    if (units[currentTurnUnitId] && units[currentTurnUnitId].slot.name === 'enemy') {
+    if (
+      selectedActionId &&
+      units[currentTurnUnitId] &&
+      units[currentTurnUnitId].slot.name === 'enemy'
+    ) {
       setTimeout(() => {
-        const targets = getUnitsInAttackRange(units, currentTurnUnitId);
+        const actionId = Object.values(units[currentTurnUnitId].actions)[0].id;
+        if (!actionId) {
+          return;
+        }
+        const targets = getUnitsInAttackRange(units, currentTurnUnitId, selectedActionId);
         if (!targets.length) {
           return;
         }
-        performUnitAction(
-          units[currentTurnUnitId],
-          (dmgAmount, isCrit) => {
-            dispatch(
-              unitsSlice.actions.dmgUnit({
-                sourceUnitId: units[currentTurnUnitId].id,
-                targets: [
-                  {
-                    unitId: slotIdToUnit[targets[0].name][targets[0].id].id,
-                    dmgAmount,
-                    isCrit,
-                  },
-                ],
-              })
-            );
-          },
-          (healAmount, isCrit) => {
-            dispatch(
-              unitsSlice.actions.healUnit({
-                sourceUnitId: units[currentTurnUnitId].id,
-                targets: [
-                  {
-                    unitId: units[currentTurnUnitId].id,
-                    healAmount,
-                    isCrit,
-                  },
-                ],
-              })
-            );
-          },
-          () => {
-            dispatch(
-              unitsSlice.actions.missUnit({
-                sourceUnitId: units[currentTurnUnitId].id,
-                targetUnitIds: [slotIdToUnit[targets[0].name][targets[0].id].id],
-              })
-            );
-          }
+        const result = performUnitAction(units[currentTurnUnitId], actionId);
+        executeAction(
+          dispatch,
+          result,
+          currentTurnUnitId,
+          targets.map((t) => t.id)
         );
       }, 1000);
     }
   }, [units, currentTurnUnitId]);
 
-  const onMouseOver = (unitId: string) => () => {
+  const onMouseOverUnit = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
   };
-  const onMouseOut = () => {
+  const onMouseOutUnit = () => {
     setMouseOverUnitId(undefined);
   };
-  const unitClick = (unitId: string) => () => {
-    if (units[currentTurnUnitId].slot.name === 'enemy' || unitIsDead(units[currentTurnUnitId])) {
+  const onClickUnit = (unitId: string) => () => {
+    if (
+      !selectedActionId ||
+      units[currentTurnUnitId].slot.name === 'enemy' ||
+      unitIsDead(units[currentTurnUnitId])
+    ) {
       return;
     }
     const sourceUnit = units[currentTurnUnitId];
-    performUnitAction(
-      sourceUnit,
-      (dmgAmount, isCrit) => {
-        dispatch(
-          unitsSlice.actions.dmgUnit({
-            sourceUnitId: sourceUnit.id,
-            targets: [
-              {
-                unitId,
-                dmgAmount,
-                isCrit,
-              },
-            ],
-          })
-        );
-      },
-      (healAmount, isCrit) => {
-        dispatch(
-          unitsSlice.actions.healUnit({
-            sourceUnitId: sourceUnit.id,
-            targets: [
-              {
-                unitId,
-                healAmount,
-                isCrit,
-              },
-            ],
-          })
-        );
-      },
-      () => {
-        dispatch(
-          unitsSlice.actions.missUnit({
-            sourceUnitId: sourceUnit.id,
-            targetUnitIds: [unitId],
-          })
-        );
-      }
-    );
+    const result = performUnitAction(sourceUnit, selectedActionId);
+    executeAction(dispatch, result, currentTurnUnitId, [unitId]);
+  };
+
+  const onMouseOverAction = (actionId: string) => () => {
+    setMouseOverActionId(actionId);
+  };
+  const onMouseOutAction = () => {
+    setMouseOverActionId(undefined);
+  };
+  const onClickAction = (actionId: string) => () => {
+    setSelectedActionId(actionId);
   };
 
   const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
@@ -259,9 +282,9 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         width={width}
         height={height}
         interactive={true}
-        mouseover={onMouseOver(unit.id)}
-        mouseout={onMouseOut}
-        click={unitClick(unit.id)}
+        mouseover={onMouseOverUnit(unit.id)}
+        mouseout={onMouseOutUnit}
+        click={onClickUnit(unit.id)}
       >
         <Animable
           tweenManager={tweenManager}
@@ -308,8 +331,8 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
         interactive={true}
-        mouseover={onMouseOver(currentTurnUnitId)}
-        mouseout={onMouseOut}
+        mouseover={onMouseOverUnit(currentTurnUnitId)}
+        mouseout={onMouseOutUnit}
       >
         {currentTurnUnitId !== '' && (
           <UnitComponent
@@ -336,8 +359,8 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
             x={viewportCenterX + 20 + (index + 1) * (QUEUE_UNIT_SIZE + QUEUE_UNIT_OFFSET)}
             y={CURRENT_UNIT_Y_OFFSET}
             interactive={true}
-            mouseover={onMouseOver(unit.id)}
-            mouseout={onMouseOut}
+            mouseover={onMouseOverUnit(unit.id)}
+            mouseout={onMouseOutUnit}
           >
             <UnitComponent
               tweenManager={tweenManager}
@@ -391,6 +414,59 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
       {mouseOverUnitId && units[mouseOverUnitId] && (
         <UnitDetails x={230} y={20} unit={units[mouseOverUnitId]} />
       )}
+      {units[currentTurnUnitId] &&
+        Object.values(units[currentTurnUnitId].actions).map((action, index) => {
+          return (
+            <Container
+              key={action.id}
+              x={700 + index * 220}
+              y={700}
+              interactive={true}
+              mouseover={onMouseOverAction(action.id)}
+              mouseout={onMouseOutAction}
+              click={onClickAction(action.id)}
+            >
+              <Rect width={200} height={200} fillColor={0x00ff00} />
+              <Text
+                text={action.name}
+                style={{
+                  fontSize: 16,
+                  align: 'center',
+                  fontWeight: 'bold',
+                  wordWrap: true,
+                  wordWrapWidth: 200,
+                }}
+              />
+              <Text
+                text={action.description}
+                y={30}
+                style={{
+                  fontSize: 16,
+                  align: 'center',
+                  fontWeight: 'bold',
+                  wordWrap: true,
+                  wordWrapWidth: 200,
+                }}
+              />
+              {selectedActionId === action.id && (
+                <Animable
+                  width={200}
+                  height={200}
+                  lineWidth={6}
+                  tweenManager={tweenManager}
+                  animation={SELECTED_UNIT_BORDER_ANIMATION}
+                />
+              )}
+              <Rect
+                width={200}
+                height={200}
+                lineColor={MOUSE_OVER_LINE_COLOR}
+                lineWidth={3}
+                alpha={mouseOverActionId === action.id ? 1 : 0}
+              />
+            </Container>
+          );
+        })}
       <Button
         x={800}
         y={900}

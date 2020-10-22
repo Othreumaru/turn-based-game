@@ -19,7 +19,11 @@ export const getSlotIdToUnitMap = (units: UnitMap) =>
     acc[unit.slot.name][unit.slot.id] = unit;
     return acc;
   }, {} as any);
-export const getUnitsInAttackRange = (units: UnitMap, sourceUnitId: string): SlotPointer[] => {
+export const getUnitsInAttackRange = (
+  units: UnitMap,
+  sourceUnitId: string,
+  actionId: string
+): SlotPointer[] => {
   const source = units[sourceUnitId];
   const aliveEnemyUnits = getAliveEnemyUnits(units);
   const alivePlayerUnits = getAlivePlayerUnits(units);
@@ -28,8 +32,14 @@ export const getUnitsInAttackRange = (units: UnitMap, sourceUnitId: string): Slo
   const thereAreUnitsInFirstColumn =
     oppositeTeamUnits.filter((u) => u.slot.column === 1).length !== 0;
 
-  if (source.action.type === 'attack-action') {
-    if (source.action.range === 'closest') {
+  const action = source.actions[actionId];
+
+  if (!action) {
+    return [];
+  }
+
+  if (action.type === 'attack-action') {
+    if (action.range === 'closest') {
       if (!oppositeTeamUnits.length) {
         return [];
       }
@@ -43,21 +53,24 @@ export const getUnitsInAttackRange = (units: UnitMap, sourceUnitId: string): Slo
       return oppositeTeamUnits
         .filter((u) => columnToAttack === u.slot.column && rowsToAttack.includes(u.slot.row))
         .map((u) => u.slot);
-    } else if (source.action.range === 'any') {
+    } else if (action.range === 'any') {
       return oppositeTeamUnits.map((p) => p.slot);
-    } else if (source.action.range === 'all') {
+    } else if (action.range === 'all') {
       return [];
     }
     return [];
   }
-  if (source.action.type === 'heal-action') {
-    if (source.action.range === 'any') {
-      if (source.action.targetTeam === 'player') {
+  if (action.type === 'heal-action') {
+    if (action.range === 'any') {
+      if (action.targetTeam === 'player') {
         return myTeamUnits.map((p) => p.slot);
       }
     } else {
       return [];
     }
+  }
+  if (action.type === 'defensive-stance-action') {
+    return [source.slot];
   }
   return [];
 };

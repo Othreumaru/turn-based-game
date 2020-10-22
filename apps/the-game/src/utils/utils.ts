@@ -13,6 +13,13 @@ export const getRandomInt = (minVal: number, maxVal: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+export const listToMap = (acc: any, item: { id: string }): any => {
+  return {
+    ...acc,
+    [item.id]: item,
+  };
+};
+
 export const getRandomName = () => {
   const names = [
     'Arler',

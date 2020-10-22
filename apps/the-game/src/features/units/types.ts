@@ -33,29 +33,48 @@ export interface Stats {
 }
 
 export interface AttackAction {
+  id: string;
   type: 'attack-action';
+  name: string;
   targetTeam: 'player' | 'enemy';
-  range: 'closest' | 'any' | 'all';
+  range: 'self' | 'closest' | 'any' | 'all';
+  description: string;
   minDmg: number;
   maxDmg: number;
 }
 
+export interface DefensiveStanceAction {
+  id: string;
+  type: 'defensive-stance-action';
+  name: string;
+  targetTeam: 'player';
+  description: string;
+  range: 'self';
+}
+
 export interface HealAction {
+  id: string;
   type: 'heal-action';
+  name: string;
   targetTeam: 'player' | 'enemy';
   range: 'closest' | 'any' | 'all';
+  description: string;
   minHeal: number;
   maxHeal: number;
 }
 
-export type UnitActions = AttackAction | HealAction;
+export type UnitActions = AttackAction | DefensiveStanceAction | HealAction;
+
+export interface ActionMap {
+  [key: string]: UnitActions;
+}
 
 export interface Unit {
   id: string;
   slot: SlotPointer;
   name: string;
   stats: Stats;
-  action: UnitActions;
+  actions: ActionMap;
   tags: string[];
 }
 
@@ -79,6 +98,11 @@ export interface HealEffect {
     isCrit: boolean;
     healAmount: number;
   }[];
+}
+
+export interface BuffEffect {
+  sourceUnitId: string;
+  buffs: string[];
 }
 
 export interface MissEffect {

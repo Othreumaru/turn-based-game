@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DmgEffect, Game, HealEffect, MissEffect, Unit } from './types';
+import { BuffEffect, DmgEffect, Game, HealEffect, MissEffect, Unit } from './types';
 import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
 import { isEnemy, isPlayer } from './selectors';
@@ -72,6 +72,9 @@ export const unitsSlice = createSlice({
       state.upcomingTurnUnitIds = state.upcomingTurnUnitIds.filter(
         (unitId) => state.units[unitId].stats.hp.current > 0
       );
+      mutableEndTurn(state);
+    },
+    buffUnit: (state, action: PayloadAction<BuffEffect>) => {
       mutableEndTurn(state);
     },
     missUnit: (state, action: PayloadAction<MissEffect>) => {

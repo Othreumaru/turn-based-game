@@ -1,4 +1,4 @@
-import { AttackAction, HealAction, SlotPointer, Unit } from './types';
+import { AttackAction, DefensiveStanceAction, HealAction, SlotPointer, Unit } from './types';
 import { getRandomInt, LEFT_X_TOP_Y_ANCHOR, rollChance } from '../../utils';
 
 export const toSlotId = (column: number, row: number) => `${column}x${row}`;
@@ -64,12 +64,44 @@ export const getLayoutProjection = (props: GetPixelLayoutProps): ProjectedSlotPo
   });
 };
 
-export const attackUnit = (
+const takeDefensiveStance = (
   sourceUnit: Unit,
-  attackAction: AttackAction,
-  onAttack: (dmgAmount: number, isCrit: boolean) => void,
-  onMiss: () => void
-) => {
+  attackAction: DefensiveStanceAction
+): ActionResult => {
+  return {
+    type: 'buff-action-result',
+    buffs: ['defensive-stance'],
+  };
+};
+
+export interface AttackActionResult {
+  type: 'attack-action-result';
+  dmgAmount: number;
+  isCrit: boolean;
+}
+
+export interface HealActionResult {
+  type: 'heal-action-result';
+  healAmount: number;
+  isCrit: boolean;
+}
+
+export interface BuffActionResult {
+  type: 'buff-action-result';
+  buffs: string[];
+}
+
+export interface MissActionResult {
+  type: 'miss-action-result';
+}
+
+export type ActionResult =
+  | AttackActionResult
+  | HealActionResult
+  | BuffActionResult
+  | MissActionResult;
+
+export const attackUnit = (sourceUnit: Unit, attackAction: AttackAction): ActionResult => {
   let isCrit = false;
   let dmgAmount = 0;
   if (rollChance(sourceUnit.stats.hitChance.current)) {
@@ -81,18 +113,19 @@ export const attackUnit = (
       isCrit = false;
       dmgAmount = baseDmgAmount;
     }
-    onAttack(dmgAmount, isCrit);
+    return {
+      type: 'attack-action-result',
+      dmgAmount,
+      isCrit,
+    };
   } else {
-    onMiss();
+    return {
+      type: 'miss-action-result',
+    };
   }
 };
 
-export const healUnit = (
-  sourceUnit: Unit,
-  healAction: HealAction,
-  onHeal: (healAmount: number, isCrit: boolean) => void,
-  onMiss: () => void
-) => {
+export const healUnit = (sourceUnit: Unit, healAction: HealAction): ActionResult => {
   let isCrit = false;
   let healAmount = 0;
   if (rollChance(sourceUnit.stats.hitChance.current)) {
@@ -104,21 +137,25 @@ export const healUnit = (
       isCrit = false;
       healAmount = baseHealAmount;
     }
-    onHeal(healAmount, isCrit);
+    return {
+      type: 'heal-action-result',
+      healAmount,
+      isCrit,
+    };
   } else {
-    onMiss();
+    return {
+      type: 'miss-action-result',
+    };
   }
 };
 
-export const performUnitAction = (
-  sourceUnit: Unit,
-  onAttack: (dmgAmount: number, isCrit: boolean) => void,
-  onHeal: (healAmount: number, isCrit: boolean) => void,
-  onMiss: () => void
-) => {
-  if (sourceUnit.action.type === 'attack-action') {
-    attackUnit(sourceUnit, sourceUnit.action, onAttack, onMiss);
-  } else if (sourceUnit.action.type === 'heal-action') {
-    healUnit(sourceUnit, sourceUnit.action, onHeal, onMiss);
+export const performUnitAction = (sourceUnit: Unit, actionId: string): ActionResult => {
+  const action = sourceUnit.actions[actionId];
+  if (action.type === 'attack-action') {
+    return attackUnit(sourceUnit, action);
+  } else if (action.type === 'heal-action') {
+    return healUnit(sourceUnit, action);
+  } else if (action.type === 'defensive-stance-action') {
+    return takeDefensiveStance(sourceUnit, action);
   }
 };

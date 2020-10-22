@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { toSlotId } from './utils';
 import { Unit } from './types';
+import { createAttackAction, createDefensiveStanceAction, createHealAction } from './create-action';
+import { listToMap } from '../../utils';
 
 export const createWarrior = (name: string, team: string, column: number, row: number): Unit => {
   return {
@@ -18,13 +20,7 @@ export const createWarrior = (name: string, team: string, column: number, row: n
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    action: {
-      type: 'attack-action',
-      range: 'closest',
-      targetTeam: 'enemy',
-      minDmg: 22,
-      maxDmg: 28,
-    },
+    actions: [createAttackAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
   };
 };
@@ -45,13 +41,7 @@ export const createHealer = (name: string, team: string, column: number, row: nu
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    action: {
-      type: 'heal-action',
-      targetTeam: 'player',
-      range: 'any',
-      minHeal: 22,
-      maxHeal: 28,
-    },
+    actions: [createHealAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
   };
 };
@@ -72,13 +62,7 @@ export const createOrc = (name: string, team: string, column: number, row: numbe
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    action: {
-      type: 'attack-action',
-      targetTeam: 'player',
-      range: 'closest',
-      minDmg: 40,
-      maxDmg: 60,
-    },
+    actions: [createAttackAction()].reduce(listToMap, {}),
     tags: [],
   };
 };
@@ -99,13 +83,7 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    action: {
-      type: 'attack-action',
-      targetTeam: 'player',
-      range: 'any',
-      minDmg: 15,
-      maxDmg: 20,
-    },
+    actions: [createAttackAction('any')].reduce(listToMap, {}),
     tags: [],
   };
 };

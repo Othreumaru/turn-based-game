@@ -22,6 +22,13 @@ export const createWarrior = (name: string, team: string, column: number, row: n
     },
     actions: [createAttackAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
+    portrait: {
+      img: 'portraits/195.png',
+      textureXOffset: -0.24,
+      textureYOffset: -0.12,
+      textureXScale: 2,
+      textureYScale: 2,
+    },
   };
 };
 
@@ -43,6 +50,13 @@ export const createHealer = (name: string, team: string, column: number, row: nu
     },
     actions: [createHealAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
+    portrait: {
+      img: 'portraits/184.png',
+      textureXOffset: -0.24,
+      textureYOffset: -0.04,
+      textureXScale: 2,
+      textureYScale: 2,
+    },
   };
 };
 
@@ -64,6 +78,13 @@ export const createOrc = (name: string, team: string, column: number, row: numbe
     },
     actions: [createAttackAction()].reduce(listToMap, {}),
     tags: [],
+    portrait: {
+      img: 'portraits/103.png',
+      textureXOffset: -0.24,
+      textureYOffset: -0.06,
+      textureXScale: 2,
+      textureYScale: 2,
+    },
   };
 };
 
@@ -85,5 +106,12 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
     },
     actions: [createAttackAction('any')].reduce(listToMap, {}),
     tags: [],
+    portrait: {
+      img: 'portraits/82.png',
+      textureXOffset: -0.26,
+      textureYOffset: -0.03,
+      textureXScale: 2,
+      textureYScale: 2,
+    },
   };
 };

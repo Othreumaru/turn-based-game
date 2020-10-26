@@ -158,4 +158,7 @@ export const performUnitAction = (sourceUnit: Unit, actionId: string): ActionRes
   } else if (action.type === 'defensive-stance-action') {
     return takeDefensiveStance(sourceUnit, action);
   }
+  return {
+    type: 'miss-action-result',
+  };
 };

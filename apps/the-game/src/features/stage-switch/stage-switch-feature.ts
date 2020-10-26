@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Stages, StageSwitch } from './stage-switch-types';
 
 let initialState: StageSwitch = {
-  stage: 'team-stage',
+  stage: 'load-resources-stage',
 };
 
 export const stageSwitchSlice = createSlice({

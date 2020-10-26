@@ -76,6 +76,13 @@ export interface Unit {
   stats: Stats;
   actions: ActionMap;
   tags: string[];
+  portrait: {
+    img: string;
+    textureXOffset: number;
+    textureYOffset: number;
+    textureXScale: number;
+    textureYScale: number;
+  };
 }
 
 export interface UnitMap {

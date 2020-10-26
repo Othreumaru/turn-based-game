@@ -6,12 +6,14 @@ import { CENTER_X_CENTER_Y_ANCHOR } from '../../utils';
 import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
 import { Unit, unitIsDead } from '../../features/units';
+import { MaskedSprite } from '../masked-sprite';
 
 interface Props {
   x?: number;
   y?: number;
   width: number;
   height: number;
+  showName?: boolean;
   unit: Unit;
   tweenManager: TweenManager;
 }
@@ -30,8 +32,16 @@ const MISS_FRAME_ANIMATION: TweenAnimation = {
   },
 };
 
-const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit, tweenManager }) => {
-  const { stats, name } = unit;
+const PureUnitComponent: React.FC<Props> = ({
+  x,
+  y,
+  width,
+  height,
+  unit,
+  tweenManager,
+  showName = true,
+}) => {
+  const { stats, name, portrait } = unit;
   const hpBar = {
     x: 0,
     y: height * 0.8 * (Math.max(stats.hp.current, 0) / stats.hp.max),
@@ -41,17 +51,34 @@ const PureUnitComponent: React.FC<Props> = ({ x, y, width, height, unit, tweenMa
   return (
     <Container x={x || 0} y={y || 0}>
       <Container alpha={unitIsDead(unit) ? 0 : 1}>
-        <Rect width={width} height={height} fillColor={0x0000ff} />
+        <MaskedSprite
+          width={width}
+          height={height}
+          img={unit.portrait.img}
+          textureXOffset={portrait.textureXOffset}
+          textureYOffset={portrait.textureYOffset}
+          textureXScale={portrait.textureXScale}
+          textureYScale={portrait.textureYScale}
+        />
         <Rect y={height * 0.8} width={width} height={height * 0.2} fillColor={0xffffff} />
         <Rect {...hpBar} fillColor={0xff0000} />
 
-        <Text
-          x={width / 2}
-          y={height * 0.1}
-          text={name}
-          style={{ fontSize: 13, fontWeight: 'bold', fill: 0xffffff }}
-          anchor={CENTER_X_CENTER_Y_ANCHOR}
-        />
+        {showName && (
+          <Text
+            x={width / 2}
+            y={height * 0.72}
+            text={name}
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              fill: 0xffffff,
+              lineJoin: 'bevel',
+              miterLimit: 0,
+              strokeThickness: 5,
+            }}
+            anchor={CENTER_X_CENTER_Y_ANCHOR}
+          />
+        )}
         <Text
           x={width * 0.5}
           y={height * 0.8}

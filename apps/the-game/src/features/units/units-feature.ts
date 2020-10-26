@@ -66,6 +66,7 @@ export const unitsSlice = createSlice({
     },
     dmgUnit: (state, action: PayloadAction<DmgEffect>) => {
       state.units[action.payload.sourceUnitId].stats.attackCount.current += 1;
+      state.units[action.payload.sourceUnitId].stats.threat.current += action.payload.threat;
       action.payload.targets.forEach((target) => {
         state.units[target.unitId].stats.hp.current -= target.dmgAmount;
       });
@@ -85,6 +86,7 @@ export const unitsSlice = createSlice({
       mutableEndTurn(state);
     },
     healUnit: (state, action: PayloadAction<HealEffect>) => {
+      state.units[action.payload.sourceUnitId].stats.threat.current += action.payload.threat;
       action.payload.targets.forEach((target) => {
         state.units[target.unitId].stats.hp.current = Math.min(
           state.units[target.unitId].stats.hp.current + target.healAmount,

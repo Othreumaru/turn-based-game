@@ -1,5 +1,5 @@
 import { AttackAction, DefensiveStanceAction, HealAction, SlotPointer, Unit } from './types';
-import { getRandomInt, LEFT_X_TOP_Y_ANCHOR, rollChance } from '../../utils';
+import { LEFT_X_TOP_Y_ANCHOR, rollChance } from '../../utils';
 
 export const toSlotId = (column: number, row: number) => `${column}x${row}`;
 export const slotToKey = (prefix: string, slot: SlotPointer) => {
@@ -66,11 +66,12 @@ export const getLayoutProjection = (props: GetPixelLayoutProps): ProjectedSlotPo
 
 const takeDefensiveStance = (
   sourceUnit: Unit,
-  attackAction: DefensiveStanceAction
+  defensiveStanceAction: DefensiveStanceAction
 ): ActionResult => {
   return {
     type: 'buff-action-result',
     buffs: ['defensive-stance'],
+    threat: defensiveStanceAction.threat,
   };
 };
 
@@ -78,17 +79,20 @@ export interface AttackActionResult {
   type: 'attack-action-result';
   dmgAmount: number;
   isCrit: boolean;
+  threat: number;
 }
 
 export interface HealActionResult {
   type: 'heal-action-result';
   healAmount: number;
   isCrit: boolean;
+  threat: number;
 }
 
 export interface BuffActionResult {
   type: 'buff-action-result';
   buffs: string[];
+  threat: number;
 }
 
 export interface MissActionResult {
@@ -105,7 +109,7 @@ export const attackUnit = (sourceUnit: Unit, attackAction: AttackAction): Action
   let isCrit = false;
   let dmgAmount = 0;
   if (rollChance(sourceUnit.stats.hitChance.current)) {
-    const baseDmgAmount = getRandomInt(attackAction.minDmg, attackAction.maxDmg);
+    const baseDmgAmount = attackAction.dmg;
     if (rollChance(sourceUnit.stats.critChance.current)) {
       isCrit = true;
       dmgAmount = baseDmgAmount * sourceUnit.stats.critMult.current;
@@ -117,6 +121,7 @@ export const attackUnit = (sourceUnit: Unit, attackAction: AttackAction): Action
       type: 'attack-action-result',
       dmgAmount,
       isCrit,
+      threat: attackAction.threat,
     };
   } else {
     return {
@@ -129,7 +134,7 @@ export const healUnit = (sourceUnit: Unit, healAction: HealAction): ActionResult
   let isCrit = false;
   let healAmount = 0;
   if (rollChance(sourceUnit.stats.hitChance.current)) {
-    const baseHealAmount = getRandomInt(healAction.minHeal, healAction.maxHeal);
+    const baseHealAmount = healAction.heal;
     if (rollChance(sourceUnit.stats.critChance.current)) {
       isCrit = true;
       healAmount = baseHealAmount * sourceUnit.stats.critMult.current;
@@ -141,6 +146,7 @@ export const healUnit = (sourceUnit: Unit, healAction: HealAction): ActionResult
       type: 'heal-action-result',
       healAmount,
       isCrit,
+      threat: healAction.threat,
     };
   } else {
     return {

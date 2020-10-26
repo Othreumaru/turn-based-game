@@ -30,6 +30,7 @@ export interface Stats {
   initiative: Stat;
   missCount: Stat;
   attackCount: Stat;
+  threat: Stat;
 }
 
 export interface AttackAction {
@@ -39,8 +40,8 @@ export interface AttackAction {
   targetTeam: 'player' | 'enemy';
   range: 'self' | 'closest' | 'any' | 'all';
   description: string;
-  minDmg: number;
-  maxDmg: number;
+  dmg: number;
+  threat: number;
 }
 
 export interface DefensiveStanceAction {
@@ -50,6 +51,7 @@ export interface DefensiveStanceAction {
   targetTeam: 'player';
   description: string;
   range: 'self';
+  threat: number;
 }
 
 export interface HealAction {
@@ -59,8 +61,8 @@ export interface HealAction {
   targetTeam: 'player' | 'enemy';
   range: 'closest' | 'any' | 'all';
   description: string;
-  minHeal: number;
-  maxHeal: number;
+  heal: number;
+  threat: number;
 }
 
 export type UnitActions = AttackAction | DefensiveStanceAction | HealAction;
@@ -91,6 +93,7 @@ export interface UnitMap {
 
 export interface DmgEffect {
   sourceUnitId: string;
+  threat: number;
   targets: {
     unitId: string;
     isCrit: boolean;
@@ -100,6 +103,7 @@ export interface DmgEffect {
 
 export interface HealEffect {
   sourceUnitId: string;
+  threat: number;
   targets: {
     unitId: string;
     isCrit: boolean;

@@ -120,6 +120,7 @@ const executeAction = (
       dispatch(
         unitsSlice.actions.dmgUnit({
           sourceUnitId: sourceId,
+          threat: actionResult.threat,
           targets: targetIds.map((targetId) => ({
             unitId: targetId,
             dmgAmount: actionResult.dmgAmount,
@@ -133,6 +134,7 @@ const executeAction = (
       dispatch(
         unitsSlice.actions.healUnit({
           sourceUnitId: sourceId,
+          threat: actionResult.threat,
           targets: [
             {
               unitId: sourceId,
@@ -207,22 +209,20 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
       units[currentTurnUnitId] &&
       units[currentTurnUnitId].slot.name === 'enemy'
     ) {
+      const actionId = Object.values(units[currentTurnUnitId].actions)[0].id;
+      if (!actionId) {
+        return;
+      }
+      const targetSlots = getUnitsInAttackRange(units, currentTurnUnitId, actionId);
+      if (!targetSlots.length) {
+        return;
+      }
+      const result = performUnitAction(units[currentTurnUnitId], actionId);
+      const targetUnit = Object.values(units)
+        .filter((unit) => targetSlots.find((slot) => unit.slot.id === slot.id) !== undefined)
+        .sort((u1, u2) => u1.stats.threat.current - u2.stats.threat.current)[0];
       setTimeout(() => {
-        const actionId = Object.values(units[currentTurnUnitId].actions)[0].id;
-        if (!actionId) {
-          return;
-        }
-        const targets = getUnitsInAttackRange(units, currentTurnUnitId, selectedActionId);
-        if (!targets.length) {
-          return;
-        }
-        const result = performUnitAction(units[currentTurnUnitId], actionId);
-        executeAction(
-          dispatch,
-          result,
-          currentTurnUnitId,
-          targets.map((t) => t.id)
-        );
+        executeAction(dispatch, result, currentTurnUnitId, [targetUnit.id]);
       }, 1000);
     }
   }, [units, currentTurnUnitId]);

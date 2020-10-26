@@ -10,7 +10,7 @@ export const createWarrior = (name: string, team: string, column: number, row: n
     name: name,
     slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
-      hp: { current: 120, max: 120 },
+      hp: { current: 10, max: 10 },
       level: { current: 1, max: 60 },
       xp: { current: 0, max: 1000 },
       initiative: { current: 70, max: 100 },
@@ -19,8 +19,12 @@ export const createWarrior = (name: string, team: string, column: number, row: n
       critMult: { current: 2, max: 10 },
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
+      threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    actions: [createAttackAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
+    actions: [
+      createAttackAction('Sword Swing', 'closest', 2),
+      createDefensiveStanceAction(),
+    ].reduce(listToMap, {}),
     tags: [],
     portrait: {
       img: 'portraits/195.png',
@@ -38,7 +42,7 @@ export const createHealer = (name: string, team: string, column: number, row: nu
     name: name,
     slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
-      hp: { current: 120, max: 120 },
+      hp: { current: 6, max: 6 },
       level: { current: 1, max: 60 },
       xp: { current: 0, max: 1000 },
       initiative: { current: 30, max: 100 },
@@ -47,6 +51,7 @@ export const createHealer = (name: string, team: string, column: number, row: nu
       critMult: { current: 2, max: 10 },
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
+      threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
     actions: [createHealAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
@@ -66,7 +71,7 @@ export const createOrc = (name: string, team: string, column: number, row: numbe
     name: name,
     slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
-      hp: { current: 120, max: 120 },
+      hp: { current: 12, max: 12 },
       level: { current: 1, max: 60 },
       xp: { current: 0, max: 1000 },
       initiative: { current: 40, max: 100 },
@@ -75,8 +80,9 @@ export const createOrc = (name: string, team: string, column: number, row: numbe
       critMult: { current: 2, max: 10 },
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
+      threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    actions: [createAttackAction()].reduce(listToMap, {}),
+    actions: [createAttackAction('Smash', 'closest', 2)].reduce(listToMap, {}),
     tags: [],
     portrait: {
       img: 'portraits/103.png',
@@ -94,7 +100,7 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
     name: name,
     slot: { id: toSlotId(column, row), name: team, row, column },
     stats: {
-      hp: { current: 120, max: 120 },
+      hp: { current: 4, max: 4 },
       level: { current: 1, max: 60 },
       xp: { current: 0, max: 1000 },
       initiative: { current: 40, max: 100 },
@@ -103,8 +109,9 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
       critMult: { current: 2, max: 10 },
       missCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
       attackCount: { current: 0, max: Number.MAX_SAFE_INTEGER },
+      threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
-    actions: [createAttackAction('any')].reduce(listToMap, {}),
+    actions: [createAttackAction('Poisoned Arrow', 'any', 4)].reduce(listToMap, {}),
     tags: [],
     portrait: {
       img: 'portraits/82.png',

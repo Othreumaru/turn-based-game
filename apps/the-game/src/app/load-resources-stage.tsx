@@ -14,6 +14,7 @@ import {
 } from '../features/units';
 import { RootState } from './root-reducer';
 import { useDispatch, useSelector } from 'react-redux';
+import { UI_RESOURCES } from '../components/resources';
 
 interface Props {
   onDone: () => void;
@@ -51,6 +52,10 @@ export const LoadResourcesStageComponent: React.FC<Props> = ({ onDone }) => {
 
         for (const unitPortrait of unitPortraits) {
           loader.add((await import(`../assets/img/${unitPortrait}`)).default);
+        }
+
+        for (const { name, location } of UI_RESOURCES) {
+          loader.add(name, (await import(`../assets/img/${location}`)).default);
         }
 
         loader.onProgress.add((loader, resource) => {

@@ -30,6 +30,7 @@ export interface Stats {
   initiative: Stat;
   missCount: Stat;
   attackCount: Stat;
+  shield: Stat;
   threat: Stat;
 }
 

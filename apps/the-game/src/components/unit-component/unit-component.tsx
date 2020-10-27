@@ -7,6 +7,8 @@ import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
 import { Unit, unitIsDead } from '../../features/units';
 import { MaskedSprite } from '../masked-sprite';
+import { SHIELD_GRAPHICS, THREAT_GRAPHICS } from '../resources';
+import { UnitMarker } from './unit-marker';
 
 interface Props {
   x?: number;
@@ -48,6 +50,7 @@ const PureUnitComponent: React.FC<Props> = ({
     width: width,
     height: height * 0.8 * (1 - Math.max(stats.hp.current, 0) / stats.hp.max),
   };
+
   return (
     <Container x={x || 0} y={y || 0}>
       <Container alpha={unitIsDead(unit) ? 0 : 1}>
@@ -106,6 +109,26 @@ const PureUnitComponent: React.FC<Props> = ({
           <Text text={'MISS'} anchor={CENTER_X_CENTER_Y_ANCHOR} />
         </Container>
       </Animable>
+      {stats.shield.current > 0 && (
+        <UnitMarker
+          width={width / 3}
+          height={height / 3}
+          x={width * 0.9}
+          y={height * 0.7}
+          uiResourceName={SHIELD_GRAPHICS}
+          counter={stats.shield.current}
+        />
+      )}
+      {stats.threat.current > 0 && (
+        <UnitMarker
+          width={width / 3}
+          height={height / 3}
+          x={width * 0.9}
+          y={height * 0.1}
+          uiResourceName={THREAT_GRAPHICS}
+          counter={stats.threat.current}
+        />
+      )}
     </Container>
   );
 };

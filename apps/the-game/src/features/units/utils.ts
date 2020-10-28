@@ -168,3 +168,7 @@ export const performUnitAction = (sourceUnit: Unit, actionId: string): ActionRes
     type: 'miss-action-result',
   };
 };
+
+export const slotEquals = (slotA: SlotPointer) => (slotB: SlotPointer) => {
+  return slotA.name === slotB.name && slotA.column === slotB.column && slotA.row === slotB.row;
+};

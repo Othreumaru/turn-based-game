@@ -11,7 +11,9 @@ import {
   getAlivePlayerUnits,
   getLayoutProjection,
   performUnitAction,
+  slotEquals,
   SlotPointer,
+  Unit,
   unitIsDead,
   UnitMap,
   unitsSlice,
@@ -135,13 +137,11 @@ const executeAction = (
         unitsSlice.actions.healUnit({
           sourceUnitId: sourceId,
           threat: actionResult.threat,
-          targets: [
-            {
-              unitId: sourceId,
-              healAmount: actionResult.healAmount,
-              isCrit: actionResult.isCrit,
-            },
-          ],
+          targets: targetIds.map((targetId) => ({
+            unitId: targetId,
+            healAmount: actionResult.healAmount,
+            isCrit: actionResult.isCrit,
+          })),
         })
       );
       break;
@@ -214,13 +214,17 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         return;
       }
       const targetSlots = getUnitsInAttackRange(units, currentTurnUnitId, actionId);
+      console.log('attacking', targetSlots);
       if (!targetSlots.length) {
         return;
       }
       const result = performUnitAction(units[currentTurnUnitId], actionId);
-      const targetUnit = Object.values(units)
-        .filter((unit) => targetSlots.find((slot) => unit.slot.id === slot.id) !== undefined)
-        .sort((u1, u2) => u1.stats.threat.current - u2.stats.threat.current)[0];
+      const listOfUnits = Object.values(units);
+      const targetUnits = targetSlots
+        .map((slot) => listOfUnits.find((unit) => slotEquals(unit.slot)(slot)))
+        .filter((unit): unit is Unit => unit !== undefined)
+        .sort((u1, u2) => u1.stats.threat.current - u2.stats.threat.current);
+      const targetUnit = targetUnits[0];
       setTimeout(() => {
         executeAction(dispatch, result, currentTurnUnitId, [targetUnit.id]);
       }, 1000);

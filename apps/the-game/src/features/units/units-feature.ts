@@ -3,10 +3,21 @@ import { BuffEffect, DmgEffect, Game, HealEffect, MissEffect, Unit } from './typ
 import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
 import { isEnemy, isPlayer } from './selectors';
+import { getRandomName, listToMap } from '../../utils';
+import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 
 let initialState: Game = {
   turnCount: 0,
-  units: {},
+  units: [
+    createWarrior(getRandomName(), 'player', 1, 0),
+    createWarrior(getRandomName(), 'player', 1, 1),
+    createWarrior(getRandomName(), 'player', 1, 2),
+    createHealer(getRandomName(), 'player', 0, 1),
+    createOrc(getRandomName(), 'enemy', 1, 1),
+    createOrc(getRandomName(), 'enemy', 1, 0),
+    createGoblin(getRandomName(), 'enemy', 0, 1),
+    createWarrior(getRandomName(), 'bench', 1, 0),
+  ].reduce(listToMap, {}),
   upcomingTurnUnitIds: [],
   currentTurnUnitId: '',
   completedTurnUnitIds: [],

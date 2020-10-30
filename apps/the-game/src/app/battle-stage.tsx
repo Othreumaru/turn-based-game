@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { Container, Text } from 'react-pixi-fiber';
+import { Container } from 'react-pixi-fiber';
 import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
@@ -23,6 +23,7 @@ import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getUnitsInAttackRange } from '../features/units';
 import { LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
+import { CardComponent } from '../components/card-component';
 
 interface Props {
   onDone: () => void;
@@ -168,7 +169,6 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
 
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const turnCount = useSelector<RootState, number>((state) => state.game.turnCount);
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
   const currentTurnUnitId = useSelector<RootState, string>((state) => state.game.currentTurnUnitId);
   const upcomingTurnUnitIds = useSelector<RootState, string[]>(
@@ -190,12 +190,6 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   useEffect(() => {
     prevTurnUnitId.current = currentTurnUnitId;
   });
-
-  useEffect(() => {
-    if (turnCount === 0) {
-      dispatch(unitsSlice.actions.startGame());
-    }
-  }, [dispatch, turnCount]);
 
   useEffect(() => {
     if (getAlivePlayerUnits(units).length === 0) {
@@ -425,33 +419,15 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
               key={action.id}
               x={700 + index * 220}
               y={700}
+              width={200}
+              height={200}
               interactive={true}
               mouseover={onMouseOverAction(action.id)}
               mouseout={onMouseOutAction}
               click={onClickAction(action.id)}
             >
-              <Rect width={200} height={200} fillColor={0x00ff00} />
-              <Text
-                text={action.name}
-                style={{
-                  fontSize: 16,
-                  align: 'center',
-                  fontWeight: 'bold',
-                  wordWrap: true,
-                  wordWrapWidth: 200,
-                }}
-              />
-              <Text
-                text={action.description}
-                y={30}
-                style={{
-                  fontSize: 16,
-                  align: 'center',
-                  fontWeight: 'bold',
-                  wordWrap: true,
-                  wordWrapWidth: 200,
-                }}
-              />
+              <Rect fillColor={0xffffff} width={200} height={200} />
+              <CardComponent card={action} width={200} height={200} />
               {selectedActionId === action.id && (
                 <Animable
                   width={200}
@@ -465,7 +441,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
                 width={200}
                 height={200}
                 lineColor={MOUSE_OVER_LINE_COLOR}
-                lineWidth={3}
+                lineWidth={6}
                 alpha={mouseOverActionId === action.id ? 1 : 0}
               />
             </Container>

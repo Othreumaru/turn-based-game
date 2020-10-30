@@ -22,6 +22,7 @@ export const createWarrior = (name: string, team: string, column: number, row: n
       shield: { current: 0, max: Number.MAX_SAFE_INTEGER },
       threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
+    buffs: [],
     actions: [
       createAttackAction('Sword Swing', 'closest', 2),
       createDefensiveStanceAction(),
@@ -55,6 +56,7 @@ export const createHealer = (name: string, team: string, column: number, row: nu
       shield: { current: 0, max: Number.MAX_SAFE_INTEGER },
       threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
+    buffs: [],
     actions: [createHealAction(), createDefensiveStanceAction()].reduce(listToMap, {}),
     tags: [],
     portrait: {
@@ -85,6 +87,7 @@ export const createOrc = (name: string, team: string, column: number, row: numbe
       shield: { current: 0, max: Number.MAX_SAFE_INTEGER },
       threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
+    buffs: [],
     actions: [createAttackAction('Smash', 'closest', 2)].reduce(listToMap, {}),
     tags: [],
     portrait: {
@@ -115,6 +118,7 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
       shield: { current: 0, max: Number.MAX_SAFE_INTEGER },
       threat: { current: 0, max: Number.MAX_SAFE_INTEGER },
     },
+    buffs: [],
     actions: [createAttackAction('Poisoned Arrow', 'any', 4)].reduce(listToMap, {}),
     tags: [],
     portrait: {

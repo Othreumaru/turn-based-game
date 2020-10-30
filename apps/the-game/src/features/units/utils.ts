@@ -1,5 +1,6 @@
-import { AttackAction, DefensiveStanceAction, HealAction, SlotPointer, Unit } from './types';
+import { AttackAction, Buff, DefensiveStanceAction, HealAction, SlotPointer, Unit } from './types';
 import { LEFT_X_TOP_Y_ANCHOR, rollChance } from '../../utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export const toSlotId = (column: number, row: number) => `${column}x${row}`;
 export const slotToKey = (prefix: string, slot: SlotPointer) => {
@@ -70,7 +71,18 @@ const takeDefensiveStance = (
 ): ActionResult => {
   return {
     type: 'buff-action-result',
-    buffs: ['defensive-stance'],
+    buffs: [
+      {
+        id: uuidv4(),
+        statName: 'threat',
+        value: 2,
+      },
+      {
+        id: uuidv4(),
+        statName: 'shield',
+        value: 2,
+      },
+    ],
     threat: defensiveStanceAction.threat,
   };
 };
@@ -91,7 +103,7 @@ export interface HealActionResult {
 
 export interface BuffActionResult {
   type: 'buff-action-result';
-  buffs: string[];
+  buffs: Buff[];
   threat: number;
 }
 

@@ -20,6 +20,14 @@ export const listToMap = (acc: any, item: { id: string }): any => {
   };
 };
 
+export const scaleWidthHeight = (texture: { width: number; height: number }, width: number) => {
+  const ratio = texture.height / texture.width;
+  return {
+    width,
+    height: width * ratio,
+  };
+};
+
 export const getRandomName = () => {
   const names = [
     'Arler',

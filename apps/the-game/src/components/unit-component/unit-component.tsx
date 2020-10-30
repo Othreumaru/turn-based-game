@@ -7,7 +7,7 @@ import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
 import { Unit, unitIsDead } from '../../features/units';
 import { MaskedSprite } from '../masked-sprite';
-import { SHIELD_GRAPHICS, THREAT_GRAPHICS } from '../resources';
+import { SHIELD_GRAPHICS, FULL_SHIELD_GRAPHICS } from '../resources';
 import { UnitMarker } from './unit-marker';
 
 interface Props {
@@ -125,7 +125,7 @@ const PureUnitComponent: React.FC<Props> = ({
           height={height / 3}
           x={width * 0.9}
           y={height * 0.1}
-          uiResourceName={THREAT_GRAPHICS}
+          uiResourceName={FULL_SHIELD_GRAPHICS}
           counter={stats.threat.current}
         />
       )}

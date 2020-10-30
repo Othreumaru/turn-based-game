@@ -27,6 +27,7 @@ export const createDefensiveStanceAction = (): DefensiveStanceAction => {
     targetTeam: 'player',
     description: 'Give 1 shield, +2 threat',
     threat: 2,
+    shieldAmount: 2,
   };
 };
 

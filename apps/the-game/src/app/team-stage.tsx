@@ -68,6 +68,11 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
     setMouseOverUnitId(unitId);
   };
 
+  const onStageComplete = () => {
+    dispatch(unitsSlice.actions.startGame());
+    onDone();
+  };
+
   const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
     return (
       <DroppableContainer
@@ -189,7 +194,14 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
       {mouseOverUnitId && units[mouseOverUnitId] && (
         <UnitDetails x={30} y={20} unit={units[mouseOverUnitId]} />
       )}
-      <Button x={10} y={1000} width={200} height={30} label={'complete stage'} onClick={onDone} />
+      <Button
+        x={10}
+        y={1000}
+        width={200}
+        height={30}
+        label={'complete stage'}
+        onClick={onStageComplete}
+      />
     </Container>
   );
 };

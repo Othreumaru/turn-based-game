@@ -15,6 +15,12 @@ export interface SlotPointer {
   column: number;
 }
 
+export interface Buff {
+  id: string;
+  statName: string;
+  value: number;
+}
+
 export interface Stat {
   current: number;
   max: number;
@@ -52,6 +58,7 @@ export interface DefensiveStanceAction {
   targetTeam: 'player';
   description: string;
   range: 'self';
+  shieldAmount: number;
   threat: number;
 }
 
@@ -77,6 +84,7 @@ export interface Unit {
   slot: SlotPointer;
   name: string;
   stats: Stats;
+  buffs: Buff[];
   actions: ActionMap;
   tags: string[];
   portrait: {
@@ -114,7 +122,7 @@ export interface HealEffect {
 
 export interface BuffEffect {
   sourceUnitId: string;
-  buffs: string[];
+  buffs: Buff[];
 }
 
 export interface MissEffect {

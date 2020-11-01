@@ -21,6 +21,9 @@ export interface Buff {
   value: number;
 }
 
+export type Range = 'self' | 'closest' | 'any' | 'all';
+export type TargetTeam = 'player' | 'enemy';
+
 export interface Stat {
   current: number;
   max: number;
@@ -36,44 +39,32 @@ export interface Stats {
   initiative: Stat;
   missCount: Stat;
   attackCount: Stat;
+  buffGivenCount: Stat;
+  buffReceivedCount: Stat;
   shield: Stat;
   threat: Stat;
 }
 
-export interface AttackAction {
-  id: string;
-  type: 'attack-action';
-  name: string;
-  targetTeam: 'player' | 'enemy';
-  range: 'self' | 'closest' | 'any' | 'all';
-  description: string;
-  dmg: number;
-  threat: number;
+export interface StatModifier {
+  stat: keyof Stats;
+  mod: number;
 }
 
-export interface DefensiveStanceAction {
+export interface BasicAction {
   id: string;
-  type: 'defensive-stance-action';
+  type: 'basic-action';
   name: string;
-  targetTeam: 'player';
-  description: string;
-  range: 'self';
-  shieldAmount: number;
-  threat: number;
+  targetTeam: TargetTeam;
+  range: Range;
+  props: StatModifier[];
 }
 
-export interface HealAction {
-  id: string;
-  type: 'heal-action';
-  name: string;
-  targetTeam: 'player' | 'enemy';
-  range: 'closest' | 'any' | 'all';
-  description: string;
-  heal: number;
-  threat: number;
+export interface ExecuteActionArgs {
+  actionId: string;
+  targets: SlotPointer[];
 }
 
-export type UnitActions = AttackAction | DefensiveStanceAction | HealAction;
+export type UnitActions = BasicAction;
 
 export interface ActionMap {
   [key: string]: UnitActions;
@@ -98,31 +89,6 @@ export interface Unit {
 
 export interface UnitMap {
   [key: string]: Unit;
-}
-
-export interface DmgEffect {
-  sourceUnitId: string;
-  threat: number;
-  targets: {
-    unitId: string;
-    isCrit: boolean;
-    dmgAmount: number;
-  }[];
-}
-
-export interface HealEffect {
-  sourceUnitId: string;
-  threat: number;
-  targets: {
-    unitId: string;
-    isCrit: boolean;
-    healAmount: number;
-  }[];
-}
-
-export interface BuffEffect {
-  sourceUnitId: string;
-  buffs: Buff[];
 }
 
 export interface MissEffect {

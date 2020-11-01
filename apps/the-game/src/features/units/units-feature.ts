@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BuffEffect, DmgEffect, Game, HealEffect, MissEffect, Unit } from './types';
+import { ExecuteActionArgs, Game, MissEffect, Unit } from './types';
 import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
-import { isEnemy, isPlayer } from './selectors';
-import { getRandomName, listToMap } from '../../utils';
+import { getSlotIdToUnitMap, unitIsEnemy, unitIsPlayer } from './selectors';
+import { getRandomName, listToMapReducer } from '../../utils';
 import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
 
 let initialState: Game = {
@@ -17,7 +17,7 @@ let initialState: Game = {
     createOrc(getRandomName(), 'enemy', 1, 0),
     createGoblin(getRandomName(), 'enemy', 0, 1),
     createWarrior(getRandomName(), 'bench', 1, 0),
-  ].reduce(listToMap, {}),
+  ].reduce(listToMapReducer, {}),
   upcomingTurnUnitIds: [],
   currentTurnUnitId: '',
   completedTurnUnitIds: [],
@@ -48,6 +48,7 @@ const mutableEndTurn = (state: Game) => {
   state.currentTurnUnitId = current;
   state.upcomingTurnUnitIds = rest;
   state.turnCount += 1;
+  state.units[current].buffs = [];
 };
 
 export const unitsSlice = createSlice({
@@ -62,7 +63,7 @@ export const unitsSlice = createSlice({
       });
     },
     startGame: (state, _: PayloadAction<void>) => {
-      const units = Object.values(state.units).filter((u) => isPlayer(u) || isEnemy(u));
+      const units = Object.values(state.units).filter((u) => unitIsPlayer(u) || unitIsEnemy(u));
       const unitIds = sortUnits([
         ...state.upcomingTurnUnitIds.map((unitId) => state.units[unitId]),
         ...units,
@@ -75,34 +76,32 @@ export const unitsSlice = createSlice({
     endTurn: (state, _: PayloadAction<void>) => {
       mutableEndTurn(state);
     },
-    dmgUnit: (state, action: PayloadAction<DmgEffect>) => {
-      state.units[action.payload.sourceUnitId].stats.attackCount.current += 1;
-      state.units[action.payload.sourceUnitId].stats.threat.current += action.payload.threat;
-      action.payload.targets.forEach((target) => {
-        state.units[target.unitId].stats.hp.current -= target.dmgAmount;
-      });
-      state.upcomingTurnUnitIds = state.upcomingTurnUnitIds.filter(
-        (unitId) => state.units[unitId].stats.hp.current > 0
-      );
-      mutableEndTurn(state);
-    },
-    buffUnit: (state, action: PayloadAction<BuffEffect>) => {
+    executeCurrentUnitAction: (state, action: PayloadAction<ExecuteActionArgs>) => {
+      const { actionId, targets } = action.payload;
+      const sourceUnit = state.units[state.currentTurnUnitId];
+      const sourceAction = sourceUnit.actions[actionId];
+      const slotIdToUnit = getSlotIdToUnitMap(state.units);
+      switch (sourceAction.type) {
+        case 'basic-action': {
+          targets.forEach((slot) => {
+            sourceAction.props.forEach((prop) => {
+              const targetId = slotIdToUnit[slot.name][slot.id].id;
+              if (prop.stat === 'hp' && prop.mod < 0) {
+                state.units[targetId].stats[prop.stat].current +=
+                  prop.mod + sourceUnit.stats.shield.current;
+              } else {
+                state.units[targetId].stats[prop.stat].current += prop.mod;
+              }
+            });
+          });
+        }
+      }
       mutableEndTurn(state);
     },
     missUnit: (state, action: PayloadAction<MissEffect>) => {
       state.units[action.payload.sourceUnitId].stats.attackCount.current += 1;
       action.payload.targetUnitIds.forEach((unitId) => {
         state.units[unitId].stats.missCount.current += 1;
-      });
-      mutableEndTurn(state);
-    },
-    healUnit: (state, action: PayloadAction<HealEffect>) => {
-      state.units[action.payload.sourceUnitId].stats.threat.current += action.payload.threat;
-      action.payload.targets.forEach((target) => {
-        state.units[target.unitId].stats.hp.current = Math.min(
-          state.units[target.unitId].stats.hp.current + target.healAmount,
-          state.units[target.unitId].stats.hp.max
-        );
       });
       mutableEndTurn(state);
     },

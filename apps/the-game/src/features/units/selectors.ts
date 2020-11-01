@@ -2,15 +2,28 @@ import { SlotPointer, Unit, UnitMap } from './types';
 
 export const unitIsAlive = (unit: Unit) => unit.stats.hp.current > 0;
 export const unitIsDead = (unit: Unit) => !unitIsAlive(unit);
-export const isPlayer = (unit: Unit) => unit.slot.name === 'player';
-export const isEnemy = (unit: Unit) => unit.slot.name === 'enemy';
-export const isBench = (unit: Unit) => unit.slot.name === 'bench';
+export const unitIsPlayer = (unit: Unit) => unit.slot.name === 'player';
+export const unitIsEnemy = (unit: Unit) => unit.slot.name === 'enemy';
+export const unitIsBench = (unit: Unit) => unit.slot.name === 'bench';
 export const getTeam = (unit: Unit) => unit.slot.name;
 export const getOppositeTeam = (unit: Unit) => (unit.slot.name === 'player' ? 'enemy' : 'player');
+export const getShieldCount = (unit: Unit): number => {
+  return unit.buffs.reduce(
+    (acc, buff) => (buff.statName === 'shield' ? acc + buff.value : acc),
+    unit.stats.shield.current
+  );
+};
+export const getThreatCount = (unit: Unit): number => {
+  return unit.buffs.reduce(
+    (acc, buff) => (buff.statName === 'threat' ? acc + buff.value : acc),
+    unit.stats.shield.current
+  );
+};
 export const getAliveUnits = (units: UnitMap) =>
   Object.values(units).filter((u) => u.stats.hp.current > 0);
-export const getAlivePlayerUnits = (units: UnitMap) => getAliveUnits(units).filter(isPlayer);
-export const getAliveEnemyUnits = (units: UnitMap) => getAliveUnits(units).filter(isEnemy);
+export const getAlivePlayerUnits = (units: UnitMap) => getAliveUnits(units).filter(unitIsPlayer);
+export const getAliveEnemyUnits = (units: UnitMap) => getAliveUnits(units).filter(unitIsEnemy);
+
 export const getSlotIdToUnitMap = (units: UnitMap) =>
   Object.values(units).reduce((acc, unit) => {
     if (!acc[unit.slot.name]) {
@@ -27,8 +40,7 @@ export const getUnitsInAttackRange = (
   const source = units[sourceUnitId];
   const aliveEnemyUnits = getAliveEnemyUnits(units);
   const alivePlayerUnits = getAlivePlayerUnits(units);
-  const myTeamUnits = isPlayer(source) ? alivePlayerUnits : aliveEnemyUnits;
-  const oppositeTeamUnits = isPlayer(source) ? aliveEnemyUnits : alivePlayerUnits;
+  const oppositeTeamUnits = unitIsPlayer(source) ? aliveEnemyUnits : alivePlayerUnits;
   const thereAreUnitsInFirstColumn =
     oppositeTeamUnits.filter((u) => u.slot.column === 1).length !== 0;
 
@@ -38,7 +50,7 @@ export const getUnitsInAttackRange = (
     return [];
   }
 
-  if (action.type === 'attack-action') {
+  if (action.type === 'basic-action') {
     if (action.range === 'closest') {
       if (!oppositeTeamUnits.length) {
         return [];
@@ -59,18 +71,6 @@ export const getUnitsInAttackRange = (
       return [];
     }
     return [];
-  }
-  if (action.type === 'heal-action') {
-    if (action.range === 'any') {
-      if (action.targetTeam === 'player') {
-        return myTeamUnits.map((p) => p.slot);
-      }
-    } else {
-      return [];
-    }
-  }
-  if (action.type === 'defensive-stance-action') {
-    return [source.slot];
   }
   return [];
 };

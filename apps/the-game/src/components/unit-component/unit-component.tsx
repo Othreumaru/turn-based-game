@@ -5,9 +5,9 @@ import { Rect } from '../rect';
 import { CENTER_X_CENTER_Y_ANCHOR } from '../../utils';
 import { Animable } from '../animable';
 import { TweenAnimation, TweenManager } from '@zalgoforge/the-tween';
-import { Unit, unitIsDead } from '../../features/units';
+import { getShieldCount, getThreatCount, Unit, unitIsDead } from '../../features/units';
 import { MaskedSprite } from '../masked-sprite';
-import { SHIELD_GRAPHICS, FULL_SHIELD_GRAPHICS } from '../resources';
+import { SHIELD_GRAPHICS, THREAT_GRAPHICS } from '../resources';
 import { UnitMarker } from './unit-marker';
 
 interface Props {
@@ -50,6 +50,9 @@ const PureUnitComponent: React.FC<Props> = ({
     width: width,
     height: height * 0.8 * (1 - Math.max(stats.hp.current, 0) / stats.hp.max),
   };
+
+  const shieldCount = getShieldCount(unit);
+  const threatCount = getThreatCount(unit);
 
   return (
     <Container x={x || 0} y={y || 0}>
@@ -109,24 +112,24 @@ const PureUnitComponent: React.FC<Props> = ({
           <Text text={'MISS'} anchor={CENTER_X_CENTER_Y_ANCHOR} />
         </Container>
       </Animable>
-      {stats.shield.current > 0 && (
+      {shieldCount > 0 && (
         <UnitMarker
           width={width / 3}
           height={height / 3}
           x={width * 0.9}
           y={height * 0.7}
           uiResourceName={SHIELD_GRAPHICS}
-          counter={stats.shield.current}
+          counter={shieldCount}
         />
       )}
-      {stats.threat.current > 0 && (
+      {threatCount > 0 && (
         <UnitMarker
           width={width / 3}
           height={height / 3}
           x={width * 0.9}
           y={height * 0.1}
-          uiResourceName={FULL_SHIELD_GRAPHICS}
-          counter={stats.threat.current}
+          uiResourceName={THREAT_GRAPHICS}
+          counter={threatCount}
         />
       )}
     </Container>

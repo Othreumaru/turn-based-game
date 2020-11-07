@@ -2016,7 +2016,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack@npm:^4.4.31, @types/webpack@npm:^4.41.22, @types/webpack@npm:^4.41.8":
+"@types/webpack@npm:^4.4.31, @types/webpack@npm:^4.41.8":
   version: 4.41.22
   resolution: "@types/webpack@npm:4.41.22"
   dependencies:
@@ -2027,6 +2027,20 @@ __metadata:
     "@types/webpack-sources": "*"
     source-map: ^0.6.0
   checksum: 6d71714711143d6fae23e85e1b22e47959710cf86117050a61ff9e6b41430c8ddd8491269ddfa35fc5ccf8ffe13ed2bf2151682d357dc5aa56e2a38e70de2dba
+  languageName: node
+  linkType: hard
+
+"@types/webpack@npm:^4.41.24":
+  version: 4.41.24
+  resolution: "@types/webpack@npm:4.41.24"
+  dependencies:
+    "@types/anymatch": "*"
+    "@types/node": "*"
+    "@types/tapable": "*"
+    "@types/uglify-js": "*"
+    "@types/webpack-sources": "*"
+    source-map: ^0.6.0
+  checksum: 2237901a976cab34c86aca729244f392af238d2a8ea53ffda8b9c00259f4d8b081b48fdd47bf159f3fda475621bfe7e8eb81076ec2252fa96dced5087be308e9
   languageName: node
   linkType: hard
 
@@ -2243,7 +2257,7 @@ __metadata:
     "@types/react-redux": ^7.1.11
     "@types/react-router": ^5.1.8
     "@types/uuid": ^8.3.0
-    "@types/webpack": ^4.41.22
+    "@types/webpack": ^4.41.24
     "@types/webpack-env": 1.15.3
     "@zalgoforge/the-tween": "workspace:*"
     babel-loader: ^8.1.0

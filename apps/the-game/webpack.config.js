@@ -15,7 +15,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
   mode: 'development',
   entry: {
-    app: './src/main.tsx',
+    app: ['react-hot-loader/patch', './src/main.tsx'],
   },
   output: {
     path: outPath,
@@ -24,7 +24,6 @@ module.exports = {
   },
   target: 'web',
   resolve: {
-    alias: { 'react-dom': '@hot-loader/react-dom' },
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     plugins: [PnpWebpackPlugin],
   },

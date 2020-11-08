@@ -1847,10 +1847,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@hot-loader/react-dom", [
-        ["virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:16.13.0", {
-          "packageLocation": "./.yarn/$$virtual/@hot-loader-react-dom-virtual-efbeb80dab/0/cache/@hot-loader-react-dom-npm-16.13.0-ef8d7c6b4f-ea7a2140d2.zip/node_modules/@hot-loader/react-dom/",
+        ["virtual:bf9da4b1ccad6726aeda3e0fd5053021230d81eb71b4e3b4d7958d553594caeee354e7a9abc5c4844e13e19ab20e9b281c7df9396439596d6676e995022b35dd#npm:16.13.0", {
+          "packageLocation": "./.yarn/$$virtual/@hot-loader-react-dom-virtual-a862d3e0b1/0/cache/@hot-loader-react-dom-npm-16.13.0-ef8d7c6b4f-ea7a2140d2.zip/node_modules/@hot-loader/react-dom/",
           "packageDependencies": [
-            ["@hot-loader/react-dom", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:16.13.0"],
+            ["@hot-loader/react-dom", "virtual:bf9da4b1ccad6726aeda3e0fd5053021230d81eb71b4e3b4d7958d553594caeee354e7a9abc5c4844e13e19ab20e9b281c7df9396439596d6676e995022b35dd#npm:16.13.0"],
             ["@types/react", "npm:16.9.56"],
             ["loose-envify", "npm:1.4.0"],
             ["object-assign", "npm:4.1.1"],
@@ -2797,7 +2797,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:7.12.1"],
             ["@babel/preset-react", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:7.12.5"],
             ["@babel/preset-typescript", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:7.12.1"],
-            ["@hot-loader/react-dom", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:16.13.0"],
             ["@reduxjs/toolkit", "npm:1.4.0"],
             ["@types/classnames", "npm:2.2.11"],
             ["@types/ramda", "npm:0.27.32"],
@@ -7356,7 +7355,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/$$virtual/react-hot-loader-virtual-bf9da4b1cc/0/cache/react-hot-loader-npm-4.13.0-ec29a44932-f1df03e932.zip/node_modules/react-hot-loader/",
           "packageDependencies": [
             ["react-hot-loader", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:4.13.0"],
-            ["@hot-loader/react-dom", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:16.13.0"],
+            ["@hot-loader/react-dom", "virtual:bf9da4b1ccad6726aeda3e0fd5053021230d81eb71b4e3b4d7958d553594caeee354e7a9abc5c4844e13e19ab20e9b281c7df9396439596d6676e995022b35dd#npm:16.13.0"],
             ["@types/react", "npm:16.9.56"],
             ["@types/react-dom", "npm:16.9.9"],
             ["@types/types__react", null],
@@ -7452,7 +7451,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["react-redux", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:7.2.2"],
             ["@babel/runtime", "npm:7.12.5"],
-            ["@hot-loader/react-dom", "virtual:3dd743f0882bb5ac913e174d483de861ede7fa01181bac83c619d01a3ff6b85a634c875ca8076e62d3a3f187ad5ff4c543662f0eb7440d2d4046c739b3b4683a#npm:16.13.0"],
+            ["@hot-loader/react-dom", "virtual:bf9da4b1ccad6726aeda3e0fd5053021230d81eb71b4e3b4d7958d553594caeee354e7a9abc5c4844e13e19ab20e9b281c7df9396439596d6676e995022b35dd#npm:16.13.0"],
             ["@types/react", "npm:16.9.56"],
             ["@types/redux", null],
             ["hoist-non-react-statics", "npm:3.3.2"],

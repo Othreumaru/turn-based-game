@@ -7,7 +7,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --mode development --hot --progress --color --port 8080",
+    "start": "webpack serve --mode development --hot --progress --color --port 9000",
     "build": "webpack -p --progress --colors",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
@@ -32,7 +32,7 @@
     "pnp-webpack-plugin": "^1.6.4",
     "react-hot-loader": "^4.13.0",
     "webpack": "^5.4.0",
-    "webpack-cli": "^3.3.12",
+    "webpack-cli": "4.2.0",
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {

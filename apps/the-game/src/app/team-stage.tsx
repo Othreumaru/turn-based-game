@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Container } from 'react-pixi-fiber';
+import { Container, Text } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
 import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { AppContext } from './app-context';
@@ -19,6 +19,7 @@ import {
 } from '../features/units';
 import { unitsSlice } from '../features/units';
 import { useState } from 'react';
+import { GoldLabelComponent } from '../components/gold-label';
 
 interface Props {
   onDone: () => void;
@@ -60,7 +61,10 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const viewportCenterY = viewportHeight / 2;
   const viewportCenterX = viewportWidth / 2;
   const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const maxPlayerUnitsCount = useSelector<RootState, number>((state) => state.game.teamSize);
+  const playerUnitsCount = Object.values(units).filter((u) => u.slot.name === 'player').length;
   const slotIdToUnit = useSelector<RootState, any>((state) => getSlotIdToUnitMap(state.game.units));
+  const goldCount = useSelector<RootState, number>((state) => state.game.goldCount);
   const dispatch = useDispatch();
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
@@ -84,6 +88,9 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         height={height}
         debugColor={0xff0000}
         onDrop={(unit: Unit) => {
+          if (slot.name === 'player' && playerUnitsCount >= maxPlayerUnitsCount) {
+            return;
+          }
           const unitAtLocation: Unit | undefined = slotIdToUnit[slot.name]
             ? slotIdToUnit[slot.name][slot.id]
             : undefined;
@@ -147,6 +154,8 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   };
   return (
     <Container>
+      <GoldLabelComponent x={viewportCenterX} y={20} goldCount={goldCount} />
+      <Text x={20} y={260} text={`(${playerUnitsCount}/${maxPlayerUnitsCount})`} />
       <Container>
         {playerProjection.map(({ x, y, width, height, slot }) =>
           renderSlot({

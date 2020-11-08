@@ -98,6 +98,8 @@ export interface MissEffect {
 
 export interface Game {
   turnCount: number;
+  goldCount: number;
+  teamSize: number;
   units: UnitMap;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;

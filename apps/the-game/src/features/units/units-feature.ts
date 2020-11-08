@@ -8,6 +8,8 @@ import { createGoblin, createHealer, createOrc, createWarrior } from './create-u
 
 let initialState: Game = {
   turnCount: 0,
+  goldCount: 100,
+  teamSize: 4,
   units: [
     createWarrior(getRandomName(), 'player', 1, 0),
     createWarrior(getRandomName(), 'player', 1, 1),

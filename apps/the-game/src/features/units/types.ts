@@ -100,6 +100,9 @@ export interface Game {
   turnCount: number;
   goldCount: number;
   teamSize: number;
+  costs: {
+    teamSlot: number;
+  };
   units: UnitMap;
   completedTurnUnitIds: string[];
   currentTurnUnitId: string;

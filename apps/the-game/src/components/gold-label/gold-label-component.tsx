@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Container, Sprite, Text } from 'react-pixi-fiber';
 import {
-  LEFT_X_CENTER_Y_ANCHOR,
-  RIGHT_X_CENTER_Y_ANCHOR,
+  LEFT_X_TOP_Y_ANCHOR,
+  RIGHT_X_TOP_Y_ANCHOR,
   scaleWidthHeight,
   SMALL_TEXT_FONT_STYLE,
 } from '../../utils';
@@ -24,9 +24,9 @@ export const GoldLabelComponent = React.memo<Props>(({ x, y, goldCount }) => {
         width={coinSize.width}
         height={coinSize.height}
         texture={coinTexture}
-        anchor={LEFT_X_CENTER_Y_ANCHOR}
+        anchor={LEFT_X_TOP_Y_ANCHOR}
       />
-      <Text text={`${goldCount}`} style={SMALL_TEXT_FONT_STYLE} anchor={RIGHT_X_CENTER_Y_ANCHOR} />
+      <Text text={`${goldCount}`} style={SMALL_TEXT_FONT_STYLE} anchor={RIGHT_X_TOP_Y_ANCHOR} />
     </Container>
   );
 });

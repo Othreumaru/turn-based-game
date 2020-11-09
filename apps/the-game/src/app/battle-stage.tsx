@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { Container } from 'react-pixi-fiber';
+import { Container, Text } from 'react-pixi-fiber';
 import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { Rect } from '../components/rect';
 import { Button } from '../components/button/button';
@@ -394,15 +394,17 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
           );
         })}
       <Button
-        x={800}
-        y={900}
+        x={1150}
+        y={700}
+        type={'enabled'}
         width={120}
         height={30}
-        label={'next-turn'}
         onClick={() => {
           dispatch(unitsSlice.actions.endTurn());
         }}
-      />
+      >
+        <Text text={'Skip Turn'} />
+      </Button>
     </Container>
   );
 };

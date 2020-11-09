@@ -10,6 +10,7 @@ interface Props {
   alpha?: number;
   width: number;
   height: number;
+  radius?: number;
 }
 
 const TYPE = 'Rect';
@@ -25,7 +26,7 @@ export const behavior = {
     if (newProps.fillColor) {
       instance.beginFill(newProps.fillColor);
     }
-    instance.drawRect(0, 0, newProps.width, newProps.height);
+    instance.drawRoundedRect(0, 0, newProps.width, newProps.height, newProps.radius || 0);
     if (newProps.fillColor) {
       instance.endFill();
     }

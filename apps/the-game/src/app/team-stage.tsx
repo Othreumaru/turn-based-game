@@ -3,7 +3,7 @@ import { Container, Text } from 'react-pixi-fiber';
 import { Button } from '../components/button/button';
 import { UnitComponent, UnitDetails } from '../components/unit-component';
 import { AppContext } from './app-context';
-import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR } from '../utils';
+import { CENTER_X_BOTTOM_Y_ANCHOR, LEFT_X_CENTER_Y_ANCHOR, SMALL_TEXT_FONT_STYLE } from '../utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './root-reducer';
 import { DraggableContainer } from '../components/draggable-container';
@@ -65,6 +65,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const playerUnitsCount = Object.values(units).filter((u) => u.slot.name === 'player').length;
   const slotIdToUnit = useSelector<RootState, any>((state) => getSlotIdToUnitMap(state.game.units));
   const goldCount = useSelector<RootState, number>((state) => state.game.goldCount);
+  const teamSlotCost = useSelector<RootState, number>((state) => state.game.costs.teamSlot);
   const dispatch = useDispatch();
   const [mouseOverUnitId, setMouseOverUnitId] = useState<string>();
 
@@ -75,6 +76,10 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   const onStageComplete = () => {
     dispatch(unitsSlice.actions.startGame());
     onDone();
+  };
+
+  const increaseTeamSize = () => {
+    dispatch(unitsSlice.actions.buyTeamSlot());
   };
 
   const renderSlot: RenderCallback = ({ x, y, width, height, slot }) => {
@@ -88,7 +93,11 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         height={height}
         debugColor={0xff0000}
         onDrop={(unit: Unit) => {
-          if (slot.name === 'player' && playerUnitsCount >= maxPlayerUnitsCount) {
+          if (
+            slot.name === 'player' &&
+            unit.slot.name !== 'player' &&
+            playerUnitsCount >= maxPlayerUnitsCount
+          ) {
             return;
           }
           const unitAtLocation: Unit | undefined = slotIdToUnit[slot.name]
@@ -154,6 +163,17 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   };
   return (
     <Container>
+      <Button
+        type={goldCount >= teamSlotCost ? 'enabled' : 'disabled'}
+        x={80}
+        y={265}
+        width={120}
+        height={30}
+        onClick={increaseTeamSize}
+      >
+        <Text x={10} text={'+1'} style={SMALL_TEXT_FONT_STYLE} />
+        <GoldLabelComponent x={80} goldCount={teamSlotCost} />
+      </Button>
       <GoldLabelComponent x={viewportCenterX} y={20} goldCount={goldCount} />
       <Text x={20} y={260} text={`(${playerUnitsCount}/${maxPlayerUnitsCount})`} />
       <Container>
@@ -204,13 +224,15 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
         <UnitDetails x={30} y={20} unit={units[mouseOverUnitId]} />
       )}
       <Button
-        x={10}
+        type={playerUnitsCount >= 1 ? 'enabled' : 'disabled'}
+        x={viewportWidth - 220}
         y={1000}
         width={200}
         height={30}
-        label={'complete stage'}
         onClick={onStageComplete}
-      />
+      >
+        <Text x={10} text={'complete stage'} />
+      </Button>
     </Container>
   );
 };

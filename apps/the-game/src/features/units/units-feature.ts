@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
 import { getSlotIdToUnitMap, unitIsEnemy, unitIsPlayer } from './selectors';
 import { getRandomName, listToMapReducer } from '../../utils';
-import { createGoblin, createHealer, createOrc, createWarrior } from './create-units';
+import { createHealer, createRat, createWarrior } from './create-units';
 
 let initialState: Game = {
   turnCount: 0,
@@ -19,9 +19,9 @@ let initialState: Game = {
     createWarrior(getRandomName(), 'bench', 2, 0),
     createHealer(getRandomName(), 'bench', 3, 0),
     createWarrior(getRandomName(), 'bench', 4, 0),
-    createOrc(getRandomName(), 'enemy', 1, 1),
-    createOrc(getRandomName(), 'enemy', 1, 0),
-    createGoblin(getRandomName(), 'enemy', 0, 1),
+    createRat('A Rat', 'enemy', 1, 1),
+    createRat('A Rat', 'enemy', 1, 0),
+    createRat('A Rat', 'enemy', 0, 1),
   ].reduce(listToMapReducer, {}),
   upcomingTurnUnitIds: [],
   currentTurnUnitId: '',

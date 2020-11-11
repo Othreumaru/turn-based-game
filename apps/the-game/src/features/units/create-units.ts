@@ -106,3 +106,22 @@ export const createGoblin = (name: string, team: string, column: number, row: nu
     },
   };
 };
+
+export const createRat = (name: string, team: string, column: number, row: number): Unit => {
+  return {
+    id: uuidv4(),
+    name: name,
+    slot: { id: toSlotId(column, row), name: team, row, column },
+    stats: createInitStats({ hp: { current: 4, max: 4 }, critChance: { current: 0.6, max: 1 } }),
+    buffs: [],
+    actions: listToMap([createBasicEnemyAction('closest')('Bite')([{ stat: 'hp', mod: -2 }])]),
+    tags: [],
+    portrait: {
+      img: 'portraits/67.png',
+      textureXOffset: -0.1,
+      textureYOffset: 0,
+      textureXScale: 1.5,
+      textureYScale: 1.5,
+    },
+  };
+};

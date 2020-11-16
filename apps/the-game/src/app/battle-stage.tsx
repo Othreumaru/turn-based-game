@@ -14,14 +14,14 @@ import {
   SlotPointer,
   Unit,
   unitIsDead,
-  UnitMap,
   unitsSlice,
+  Turn,
 } from '../features/units';
 import { RootState } from './root-reducer';
 import { Animable } from '../components/animable';
 import { AppContext } from './app-context';
 import { getUnitsInAttackRange } from '../features/units';
-import { LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
+import { getRandomInt, LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
 import { CardComponent } from '../components/card-component';
 
 interface Props {
@@ -113,24 +113,25 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
 
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const units = useSelector<RootState, UnitMap>((state) => state.game.units);
-  const currentTurnUnitId = useSelector<RootState, string>((state) => state.game.currentTurnUnitId);
-  const upcomingTurnUnitIds = useSelector<RootState, string[]>(
-    (state) => state.game.upcomingTurnUnitIds
-  );
+  const units = useSelector<RootState, Dictionary<Unit>>((state) => state.game.units);
+  const currentTurn = useSelector<RootState, Turn | undefined>((state) => state.game.currentTurn);
+  const currentUnit = currentTurn ? units[currentTurn.unitId] : undefined;
+  const currentUnitId = currentUnit ? currentUnit.id : '';
+  const currentUnitActions = currentUnit ? currentUnit.actions : [];
+  const upcomingTurns = useSelector<RootState, Turn[]>((state) => state.game.upcomingTurns);
   const unitsInAttackingRange =
-    currentTurnUnitId !== '' && Object.values(units[currentTurnUnitId].actions)[selectedActionIndex]
+    currentTurn !== undefined && Object.values(currentUnitActions)[selectedActionIndex]
       ? getUnitsInAttackRange(
           units,
-          currentTurnUnitId,
-          Object.values(units[currentTurnUnitId].actions)[selectedActionIndex].id
+          currentUnitId,
+          Object.values(currentUnitActions)[selectedActionIndex].id
         )
       : [];
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    prevTurnUnitId.current = currentTurnUnitId;
+    prevTurnUnitId.current = currentUnitId;
   });
 
   if (getAlivePlayerUnits(units).length === 0) {
@@ -138,36 +139,40 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
   }
 
   useEffect(() => {
-    if (
-      selectedActionIndex &&
-      units[currentTurnUnitId] &&
-      units[currentTurnUnitId].slot.name === 'enemy'
-    ) {
-      const actionId = Object.values(units[currentTurnUnitId].actions)[0].id;
+    if (selectedActionIndex && currentUnit && currentUnit.slot.name === 'enemy') {
+      const actions = Object.values(currentUnitActions);
+      const randomActionIndex = getRandomInt(0, actions.length);
+      setSelectedActionIndex(randomActionIndex);
+      const actionId = actions[randomActionIndex].id;
       if (!actionId) {
         return;
       }
-      const targetSlots = getUnitsInAttackRange(units, currentTurnUnitId, actionId);
-      console.log('attacking', targetSlots);
+      const targetSlots = getUnitsInAttackRange(units, currentUnitId, actionId);
       if (!targetSlots.length) {
+        console.log('nothing to attack skipping');
+        setTimeout(() => {
+          dispatch(unitsSlice.actions.endTurn());
+        }, 1000);
         return;
       }
+
       const listOfUnits = Object.values(units);
       const targetUnits = targetSlots
         .map((slot) => listOfUnits.find((unit) => slotEquals(unit.slot)(slot)))
         .filter((unit): unit is Unit => unit !== undefined)
         .sort((u1, u2) => u1.stats.threat.current - u2.stats.threat.current);
       const targetUnit = targetUnits[0];
+      console.log('attacking', targetUnit);
       setTimeout(() => {
         dispatch(
           unitsSlice.actions.executeCurrentUnitAction({
-            actionId: Object.values(units[currentTurnUnitId].actions)[0].id,
+            actionId,
             targets: [targetUnit].map((unit) => unit.slot),
           })
         );
       }, 1000);
     }
-  }, [units, currentTurnUnitId]);
+  }, [units, currentUnitId]);
 
   const onMouseOverUnit = (unitId: string) => () => {
     setMouseOverUnitId(unitId);
@@ -176,11 +181,10 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
     setMouseOverUnitId(undefined);
   };
   const onClickUnit = (unitId: string) => () => {
-    if (unitIsEnemy(units[currentTurnUnitId]) || unitIsDead(units[currentTurnUnitId])) {
+    if (!currentUnit || unitIsEnemy(currentUnit) || unitIsDead(currentUnit)) {
       return;
     }
-    const selectedActionId = Object.values(units[currentTurnUnitId].actions)[selectedActionIndex]
-      .id;
+    const selectedActionId = Object.values(currentUnitActions)[selectedActionIndex].id;
     dispatch(
       unitsSlice.actions.executeCurrentUnitAction({
         actionId: selectedActionId,
@@ -239,7 +243,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         >
           <UnitComponent width={width} height={height} unit={unit} tweenManager={tweenManager} />
         </Animable>
-        {currentTurnUnitId === unit.id && (
+        {currentUnitId === unit.id && (
           <Animable
             width={width}
             height={height}
@@ -275,14 +279,14 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         x={viewportCenterX}
         y={CURRENT_UNIT_Y_OFFSET}
         interactive={true}
-        mouseover={onMouseOverUnit(currentTurnUnitId)}
+        mouseover={onMouseOverUnit(currentUnitId)}
         mouseout={onMouseOutUnit}
       >
-        {currentTurnUnitId !== '' && (
+        {currentUnitId !== '' && (
           <UnitComponent
             height={QUEUE_UNIT_SIZE}
             width={QUEUE_UNIT_SIZE}
-            unit={units[currentTurnUnitId]}
+            unit={units[currentUnitId]}
             tweenManager={tweenManager}
           />
         )}
@@ -291,12 +295,12 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
           height={QUEUE_UNIT_SIZE}
           lineColor={MOUSE_OVER_LINE_COLOR}
           lineWidth={3}
-          alpha={mouseOverUnitId === currentTurnUnitId ? 1 : 0}
+          alpha={mouseOverUnitId === currentUnitId ? 1 : 0}
         />
       </Container>
 
-      {upcomingTurnUnitIds
-        .map((unitId) => units[unitId])
+      {upcomingTurns
+        .map((turn) => units[turn.unitId])
         .map((unit, index) => (
           <Container
             key={unit.id}
@@ -354,12 +358,12 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
           })
         )}
       </Container>
-      {units[currentTurnUnitId] && <UnitDetails x={30} y={20} unit={units[currentTurnUnitId]} />}
+      {currentUnit && <UnitDetails x={30} y={20} unit={currentUnit} />}
       {mouseOverUnitId && units[mouseOverUnitId] && (
         <UnitDetails x={230} y={20} unit={units[mouseOverUnitId]} />
       )}
-      {units[currentTurnUnitId] &&
-        Object.values(units[currentTurnUnitId].actions).map((action, index) => {
+      {currentUnit &&
+        Object.values(currentUnitActions).map((action, index) => {
           return (
             <Container
               key={action.id}
@@ -394,8 +398,8 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
           );
         })}
       <Button
-        x={1150}
-        y={700}
+        x={viewportCenterX}
+        y={950}
         type={'enabled'}
         width={120}
         height={30}

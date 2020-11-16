@@ -66,17 +66,13 @@ export interface ExecuteActionArgs {
 
 export type UnitActions = BasicAction;
 
-export interface ActionMap {
-  [key: string]: UnitActions;
-}
-
 export interface Unit {
   id: string;
   slot: SlotPointer;
   name: string;
   stats: Stats;
   buffs: Buff[];
-  actions: ActionMap;
+  actions: Dictionary<UnitActions>;
   tags: string[];
   portrait: {
     img: string;
@@ -87,13 +83,14 @@ export interface Unit {
   };
 }
 
-export interface UnitMap {
-  [key: string]: Unit;
-}
-
 export interface MissEffect {
   sourceUnitId: string;
   targetUnitIds: string[];
+}
+
+export interface Turn {
+  unitId: string;
+  selectedActionIndex: number;
 }
 
 export interface Game {
@@ -103,8 +100,8 @@ export interface Game {
   costs: {
     teamSlot: number;
   };
-  units: UnitMap;
-  completedTurnUnitIds: string[];
-  currentTurnUnitId: string;
-  upcomingTurnUnitIds: string[];
+  units: Dictionary<Unit>;
+  completedTurns: Turn[];
+  currentTurn: undefined | Turn;
+  upcomingTurns: Turn[];
 }

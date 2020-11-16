@@ -114,7 +114,11 @@ export const createRat = (name: string, team: string, column: number, row: numbe
     slot: { id: toSlotId(column, row), name: team, row, column },
     stats: createInitStats({ hp: { current: 4, max: 4 }, critChance: { current: 0.6, max: 1 } }),
     buffs: [],
-    actions: listToMap([createBasicEnemyAction('closest')('Bite')([{ stat: 'hp', mod: -2 }])]),
+    actions: listToMap([
+      createBasicEnemyAction('closest')('Bite')([{ stat: 'hp', mod: -2 }]),
+      createBasicEnemyAction('closest')('Strong Bite')([{ stat: 'hp', mod: -4 }]),
+      createBasicEnemyAction('self')('Heal')([{ stat: 'hp', mod: 2 }]),
+    ]),
     tags: [],
     portrait: {
       img: 'portraits/67.png',

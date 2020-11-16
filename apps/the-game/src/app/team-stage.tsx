@@ -15,7 +15,6 @@ import {
   SlotPointer,
   slotToKey,
   Unit,
-  UnitMap,
 } from '../features/units';
 import { unitsSlice } from '../features/units';
 import { useState } from 'react';
@@ -60,7 +59,7 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   );
   const viewportCenterY = viewportHeight / 2;
   const viewportCenterX = viewportWidth / 2;
-  const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const units = useSelector<RootState, Dictionary<Unit>>((state) => state.game.units);
   const maxPlayerUnitsCount = useSelector<RootState, number>((state) => state.game.teamSize);
   const playerUnitsCount = Object.values(units).filter((u) => u.slot.name === 'player').length;
   const slotIdToUnit = useSelector<RootState, any>((state) => getSlotIdToUnitMap(state.game.units));

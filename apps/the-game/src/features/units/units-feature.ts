@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ExecuteActionArgs, Game, MissEffect, Unit } from './types';
+import { ExecuteActionArgs, Game, MissEffect, Turn, Unit } from './types';
 import * as R from 'ramda';
 import { MoveUnitToEmptySlotAction, SwapAction } from './types';
 import { getSlotIdToUnitMap, unitIsEnemy, unitIsPlayer } from './selectors';
@@ -23,37 +23,42 @@ let initialState: Game = {
     createRat('A Rat', 'enemy', 1, 0),
     createRat('A Rat', 'enemy', 0, 1),
   ].reduce(listToMapReducer, {}),
-  upcomingTurnUnitIds: [],
-  currentTurnUnitId: '',
-  completedTurnUnitIds: [],
+  upcomingTurns: [],
+  currentTurn: undefined,
+  completedTurns: [],
 };
+
+const unitToTurn = (unit: Unit): Turn => ({ unitId: unit.id, selectedActionIndex: 0 });
 
 const sortUnits = (units: Unit[]): Unit[] => {
   return units.slice().sort((u1, u2) => u2.stats.initiative.current - u1.stats.initiative.current);
 };
 
 const mutableEndTurn = (state: Game) => {
-  if (state.upcomingTurnUnitIds.length) {
-    const [current, ...rest] = state.upcomingTurnUnitIds;
-    state.units[current].tags = state.units[current].tags.filter((t) => t !== 'defensive');
-    state.completedTurnUnitIds.push(state.currentTurnUnitId);
-    state.currentTurnUnitId = current;
-    state.upcomingTurnUnitIds = rest;
+  if (state.currentTurn && state.upcomingTurns.length) {
+    const [current, ...rest] = state.upcomingTurns;
+    state.units[current.unitId].tags = state.units[current.unitId].tags.filter(
+      (t) => t !== 'defensive'
+    );
+    state.completedTurns.push(state.currentTurn);
+    state.currentTurn = current;
+    state.upcomingTurns = rest;
     return;
   }
-  const initiativeSortedUnitIds: string[] = R.pipe(
+  const initiativeSortedUnits: Unit[] = R.pipe(
     R.values,
-    sortUnits as any,
-    R.map<any, any>(R.prop('id')),
-    R.filter((unitId: string) => state.units[unitId].stats.hp.current > 0)
+    R.filter((unit: Unit) => unit.stats.hp.current > 0) as any,
+    sortUnits
   )(state.units);
 
-  const [current, ...rest] = initiativeSortedUnitIds;
-  state.completedTurnUnitIds = [];
-  state.currentTurnUnitId = current;
-  state.upcomingTurnUnitIds = rest;
-  state.turnCount += 1;
-  state.units[current].buffs = [];
+  const [current, ...rest] = initiativeSortedUnits;
+  if (current) {
+    state.completedTurns = [];
+    state.currentTurn = unitToTurn(current);
+    state.upcomingTurns = rest.map(unitToTurn);
+    state.turnCount += 1;
+    state.units[current.id].buffs = [];
+  }
 };
 
 export const unitsSlice = createSlice({
@@ -68,22 +73,26 @@ export const unitsSlice = createSlice({
       });
     },
     startGame: (state, _: PayloadAction<void>) => {
-      const units = Object.values(state.units).filter((u) => unitIsPlayer(u) || unitIsEnemy(u));
-      const unitIds = sortUnits([
-        ...state.upcomingTurnUnitIds.map((unitId) => state.units[unitId]),
-        ...units,
-      ]).map((u) => u.id);
+      const players = Object.values(state.units).filter((u) => unitIsPlayer(u) || unitIsEnemy(u));
+      const units = sortUnits([
+        ...state.upcomingTurns.map((turn) => state.units[turn.unitId]),
+        ...players,
+      ]);
 
-      state.upcomingTurnUnitIds = state.currentTurnUnitId === '' ? unitIds.slice(1) : unitIds;
-      state.currentTurnUnitId =
-        state.currentTurnUnitId === '' ? unitIds[0] : state.currentTurnUnitId;
+      state.upcomingTurns =
+        state.currentTurn === undefined ? units.slice(1).map(unitToTurn) : units.map(unitToTurn);
+      state.currentTurn =
+        state.currentTurn === undefined ? unitToTurn(units[0]) : state.currentTurn;
     },
     endTurn: (state, _: PayloadAction<void>) => {
       mutableEndTurn(state);
     },
     executeCurrentUnitAction: (state, action: PayloadAction<ExecuteActionArgs>) => {
+      if (!state.currentTurn) {
+        return;
+      }
       const { actionId, targets } = action.payload;
-      const sourceUnit = state.units[state.currentTurnUnitId];
+      const sourceUnit = state.units[state.currentTurn.unitId];
       const sourceAction = sourceUnit.actions[actionId];
       const slotIdToUnit = getSlotIdToUnitMap(state.units);
       switch (sourceAction.type) {

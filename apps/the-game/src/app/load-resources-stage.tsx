@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { CENTER_X_CENTER_Y_ANCHOR } from '../utils';
 import { AppContext } from './app-context';
 
-import { UnitMap } from '../features/units';
 import { RootState } from './root-reducer';
 import { useSelector } from 'react-redux';
 import { UI_RESOURCES } from '../components/resources';
+import { Unit } from '../features/units';
 
 interface Props {
   onDone: () => void;
@@ -16,7 +16,7 @@ interface Props {
 export const LoadResourcesStageComponent: React.FC<Props> = ({ onDone }) => {
   const { width: viewportWidth, height: viewportHeight } = React.useContext(AppContext);
   const [progress, setProgress] = useState<number>(0);
-  const units = useSelector<RootState, UnitMap>((state) => state.game.units);
+  const units = useSelector<RootState, Dictionary<Unit>>((state) => state.game.units);
 
   useEffect(() => {
     if (Object.keys(units).length !== 0) {

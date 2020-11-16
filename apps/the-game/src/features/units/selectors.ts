@@ -1,4 +1,4 @@
-import { SlotPointer, Unit, UnitMap } from './types';
+import { SlotPointer, Unit } from './types';
 
 export const unitIsAlive = (unit: Unit) => unit.stats.hp.current > 0;
 export const unitIsDead = (unit: Unit) => !unitIsAlive(unit);
@@ -19,12 +19,14 @@ export const getThreatCount = (unit: Unit): number => {
     unit.stats.shield.current
   );
 };
-export const getAliveUnits = (units: UnitMap) =>
+export const getAliveUnits = (units: Dictionary<Unit>) =>
   Object.values(units).filter((u) => u.stats.hp.current > 0);
-export const getAlivePlayerUnits = (units: UnitMap) => getAliveUnits(units).filter(unitIsPlayer);
-export const getAliveEnemyUnits = (units: UnitMap) => getAliveUnits(units).filter(unitIsEnemy);
+export const getAlivePlayerUnits = (units: Dictionary<Unit>) =>
+  getAliveUnits(units).filter(unitIsPlayer);
+export const getAliveEnemyUnits = (units: Dictionary<Unit>) =>
+  getAliveUnits(units).filter(unitIsEnemy);
 
-export const getSlotIdToUnitMap = (units: UnitMap) =>
+export const getSlotIdToUnitMap = (units: Dictionary<Unit>) =>
   Object.values(units).reduce((acc, unit) => {
     if (!acc[unit.slot.name]) {
       acc[unit.slot.name] = {};
@@ -33,7 +35,7 @@ export const getSlotIdToUnitMap = (units: UnitMap) =>
     return acc;
   }, {} as any);
 export const getUnitsInAttackRange = (
-  units: UnitMap,
+  units: Dictionary<Unit>,
   sourceUnitId: string,
   actionId: string
 ): SlotPointer[] => {

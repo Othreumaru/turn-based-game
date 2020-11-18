@@ -14,8 +14,6 @@ import {
   SlotPointer,
   Unit,
   unitIsDead,
-  unitsSlice,
-  Turn,
 } from '../features/units';
 import { RootState } from './root-reducer';
 import { Animable } from '../components/animable';
@@ -23,6 +21,7 @@ import { AppContext } from './app-context';
 import { getUnitsInAttackRange } from '../features/units';
 import { getRandomInt, LEFT_X_CENTER_Y_ANCHOR, RIGHT_X_CENTER_Y_ANCHOR } from '../utils';
 import { CardComponent } from '../components/card-component';
+import { battleSlice, Turn } from '../features/battle';
 
 interface Props {
   onDone: () => void;
@@ -113,12 +112,12 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
 
   const viewportCenterX = viewportWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  const units = useSelector<RootState, Dictionary<Unit>>((state) => state.game.units);
-  const currentTurn = useSelector<RootState, Turn | undefined>((state) => state.game.currentTurn);
+  const units = useSelector<RootState, Dictionary<Unit>>((state) => state.battle.units);
+  const currentTurn = useSelector<RootState, Turn | undefined>((state) => state.battle.currentTurn);
   const currentUnit = currentTurn ? units[currentTurn.unitId] : undefined;
   const currentUnitId = currentUnit ? currentUnit.id : '';
   const currentUnitActions = currentUnit ? currentUnit.actions : [];
-  const upcomingTurns = useSelector<RootState, Turn[]>((state) => state.game.upcomingTurns);
+  const upcomingTurns = useSelector<RootState, Turn[]>((state) => state.battle.upcomingTurns);
   const unitsInAttackingRange =
     currentTurn !== undefined && Object.values(currentUnitActions)[selectedActionIndex]
       ? getUnitsInAttackRange(
@@ -151,7 +150,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
       if (!targetSlots.length) {
         console.log('nothing to attack skipping');
         setTimeout(() => {
-          dispatch(unitsSlice.actions.endTurn());
+          dispatch(battleSlice.actions.endTurn());
         }, 1000);
         return;
       }
@@ -165,7 +164,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
       console.log('attacking', targetUnit);
       setTimeout(() => {
         dispatch(
-          unitsSlice.actions.executeCurrentUnitAction({
+          battleSlice.actions.executeCurrentUnitAction({
             actionId,
             targets: [targetUnit].map((unit) => unit.slot),
           })
@@ -186,7 +185,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
     }
     const selectedActionId = Object.values(currentUnitActions)[selectedActionIndex].id;
     dispatch(
-      unitsSlice.actions.executeCurrentUnitAction({
+      battleSlice.actions.executeCurrentUnitAction({
         actionId: selectedActionId,
         targets: [units[unitId].slot],
       })
@@ -404,7 +403,7 @@ export const BattleStageComponent: React.FC<Props> = ({ onDone }) => {
         width={120}
         height={30}
         onClick={() => {
-          dispatch(unitsSlice.actions.endTurn());
+          dispatch(battleSlice.actions.endTurn());
         }}
       >
         <Text text={'Skip Turn'} />

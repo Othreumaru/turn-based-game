@@ -19,9 +19,10 @@ import {
 import { unitsSlice } from '../features/units';
 import { useState } from 'react';
 import { GoldLabelComponent } from '../components/gold-label';
+import { TeamStageResult } from './types';
 
 interface Props {
-  onDone: () => void;
+  onDone: (result: TeamStageResult) => void;
 }
 
 interface RenderData {
@@ -73,8 +74,9 @@ export const TeamStageComponent: React.FC<Props> = ({ onDone }) => {
   };
 
   const onStageComplete = () => {
-    dispatch(unitsSlice.actions.startGame());
-    onDone();
+    onDone({
+      units,
+    });
   };
 
   const increaseTeamSize = () => {

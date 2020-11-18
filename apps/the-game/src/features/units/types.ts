@@ -83,25 +83,11 @@ export interface Unit {
   };
 }
 
-export interface MissEffect {
-  sourceUnitId: string;
-  targetUnitIds: string[];
-}
-
-export interface Turn {
-  unitId: string;
-  selectedActionIndex: number;
-}
-
 export interface Game {
-  turnCount: number;
   goldCount: number;
   teamSize: number;
   costs: {
     teamSlot: number;
   };
   units: Dictionary<Unit>;
-  completedTurns: Turn[];
-  currentTurn: undefined | Turn;
-  upcomingTurns: Turn[];
 }

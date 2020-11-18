@@ -7,6 +7,8 @@ import { TeamStageComponent } from './team-stage';
 import { BattleStageComponent } from './battle-stage';
 
 import { LoadResourcesStageComponent } from './load-resources-stage';
+import { TeamStageResult } from './types';
+import { battleSlice } from '../features/battle';
 
 interface Props {}
 
@@ -25,7 +27,8 @@ const StageSwitcherComponent: React.FC<Props> = ({}) => {
       )}
       {stage === 'team-stage' && (
         <TeamStageComponent
-          onDone={() => {
+          onDone={(result: TeamStageResult) => {
+            dispatch(battleSlice.actions.startGame(result.units));
             dispatch(stageSwitchSlice.actions.setStage('battle-stage'));
           }}
         />

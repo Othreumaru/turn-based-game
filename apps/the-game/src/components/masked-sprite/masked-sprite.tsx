@@ -13,6 +13,7 @@ interface Props {
   textureYOffset?: number;
   textureXScale?: number;
   textureYScale?: number;
+  shape?: 'rect' | 'ellipse';
 }
 
 export const PureMaskedSprite: React.FC<Props> = ({
@@ -25,6 +26,7 @@ export const PureMaskedSprite: React.FC<Props> = ({
   textureYOffset,
   textureXScale,
   textureYScale,
+  shape,
 }) => {
   const [graphics, setGraphics] = useState<PIXI.Graphics>();
   const [texture, setTexture] = useState<PIXI.Texture>();
@@ -37,7 +39,11 @@ export const PureMaskedSprite: React.FC<Props> = ({
     ctx.clear();
     ctx.beginFill(0xffffff, 1);
     ctx.lineStyle(0);
-    ctx.drawRect(0, 0, width, height);
+    if (shape === 'ellipse') {
+      ctx.drawEllipse(width / 2, height / 2, width / 2, height / 2);
+    } else {
+      ctx.drawRect(0, 0, width, height);
+    }
     ctx.endFill();
   }, [graphics, width, height]);
 
